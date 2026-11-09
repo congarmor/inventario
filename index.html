@@ -1,0 +1,781 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="theme-color" content="#7c4dff"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Inventario"><title>Inventario</title>
+<style>
+:root{--bg:#fff8f1;--fg:#2b2340;--c:#fff;--ac:#7c4dff;--bd:#eadff5;--mut:#7a6f94}
+@media(prefers-color-scheme:dark){:root{--bg:#1b1626;--fg:#f1ebff;--c:#2a2338;--bd:#3d3350;--mut:#a99fc4}}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{position:sticky;top:0;z-index:3;background:linear-gradient(120deg,#7c4dff,#ff6b6b 70%,#ffb347);color:#fff;padding:10px 12px;box-shadow:0 3px 12px #7c4dff44}
+h1{margin:0 12px 0 0;font-size:20px}.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+input,select,textarea,button{font:inherit;color:var(--fg);background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:7px 10px}
+header button{background:#ffffffe6;color:#4a2fb5;border:0;font-weight:600}header .p{background:#ffd23f;color:#3a2a00}
+.tab{background:#ffffff40!important;color:#fff!important}.tab.on{background:#fff!important;color:#7c4dff!important}
+.tab svg.cart{margin:-0.5em 0}
+button{cursor:pointer}#q{flex:1;min-width:140px}
+#st{padding:8px 14px;font-size:13px;color:var(--mut)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;padding:6px 12px 20px}
+.card{background:var(--c);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px #7c4dff22;transition:transform .15s}.card:hover{transform:translateY(-3px)}
+.im{aspect-ratio:1;background:linear-gradient(135deg,#ffe8d6,#e9defa) center/contain no-repeat;display:flex;align-items:center;justify-content:center;font-size:34px}
+.t{padding:8px 10px;font-size:13px}.t b{display:block;margin-bottom:4px}
+.ch{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;margin:1px 2px 1px 0}
+.b{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600}.b.r{background:#ffd9d9;color:#a40000}.b.o{background:#ffe9c2;color:#8a4b00}.b.g{background:#d9f5e0;color:#146c2e}
+#list{padding:0 12px 20px;overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--c);border-radius:12px;overflow:hidden}
+th{text-align:left;padding:8px;background:#7c4dff22;font-size:12px}td{padding:6px 8px;border-top:1px solid var(--bd);vertical-align:middle}tr.r{cursor:pointer}tr.r:hover td{background:#7c4dff12}
+.th{width:52px;height:52px;border-radius:8px;background:linear-gradient(135deg,#ffe8d6,#e9defa) center/contain no-repeat;display:flex;align-items:center;justify-content:center}
+dialog{max-width:480px;width:94%;border:0;border-radius:18px;background:var(--bg);color:var(--fg);box-shadow:0 10px 40px #0006}
+label{display:block;margin:6px 0 2px;font-size:12px;color:var(--mut)}dialog input,dialog textarea,dialog select{width:100%}
+#pv{max-width:100%;max-height:200px;border-radius:10px;display:block;margin:6px 0}.xb{display:block;width:100%;margin:6px 0;text-align:left}
+#pr{display:none}.lr{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin:4px 0;font-size:13px}.lr input{padding:4px 8px}.lr input.ch2{border-color:#7c4dff;background:#7c4dff33}
+@media(max-width:600px){.hm{display:none}}
+@media print{body>*:not(#pr){display:none!important}#pr{display:block;color:#000}#pr table{font-size:11px}}
+.pvs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.pvi{width:96px;text-align:center;font-size:12px}.pvi img{width:96px;height:96px;object-fit:contain;background:#0001;border-radius:10px;display:block;cursor:zoom-in}#lb{position:fixed;inset:0;z-index:20;background:#000e;display:none;align-items:center;justify-content:center;padding:12px;cursor:zoom-out}#lb.on{display:flex}#lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px}.pvb{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:3px}.pvb button{padding:2px 6px;font-size:11px}
+#dlg{max-width:560px}.fx{display:flex;flex-direction:column;gap:8px}.fh{background:linear-gradient(120deg,#7c4dff,#ff6b6b 70%,#ffb347);color:#fff;border-radius:14px;padding:10px 14px;margin:0 0 2px}.fh b{font-size:16px;font-weight:600}.gr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 10px}.gr.g3{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}.fi{display:block;min-width:0}.fi label{margin:0 0 2px;font-size:11px}.fi input,.fi textarea{border-radius:12px;padding:7px 10px}.fr{display:flex;gap:6px;align-items:center}.fr input{flex:1;min-width:0}.fbtn{display:flex;justify-content:space-between;gap:6px;margin-top:4px;flex-wrap:wrap}.fok{background:#7c4dff!important;color:#fff!important;border:0}#dlg .pvi img{width:84px;height:84px}.sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.sugb{padding:4px 10px;font-size:13px;border-radius:99px}#location{resize:vertical;min-height:44px}
+.card.sel,tr.r.sel td{outline:3px solid var(--ac);outline-offset:-3px;background:#7c4dff2b}body{padding-bottom:64px}#bar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:5;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--c);border-top:1px solid var(--bd);box-shadow:0 -4px 14px #0003}
+[hidden]{display:none!important}
+#tools{padding:8px 12px 0}
+.fp{display:none;flex-wrap:wrap;gap:8px 12px;align-items:end;background:var(--c);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;margin-bottom:8px}.fp.on{display:flex}
+.fp>div{flex:1 1 170px;min-width:150px}.fp label{margin:0 0 2px}.fp input:not([type=checkbox]),.fp select{width:100%}
+.dr{display:flex;gap:4px}.dr select,.dr input{flex:1;min-width:0;width:auto!important}.dr select{flex:1.3}
+#acts{margin:0 0 4px}#acts button{background:#ffffffe6;color:#4a2fb5;border:0;font-weight:600}#acts button:hover{background:#fff;color:#7c4dff}#masr{margin:6px 0 0}#masr button{background:#ffffffe6;color:#4a2fb5;border:0;font-weight:600}#rs{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;padding:8px 12px 0}.rs-b{text-align:left;padding:8px 10px;background:var(--c);border:1px solid var(--bd);border-radius:12px}.rs-b b{display:block;font-size:18px;font-weight:500}.rs-b small{color:var(--mut);font-size:12px}.rs-b[data-on]{outline:2px solid var(--ac);outline-offset:-2px}
+#ft span{font-weight:700;color:#d6336c}
+.bad{border-color:#e53935!important}
+.card{position:relative}.card.rt,tr.r.rt{opacity:.62}.b.x{background:#e6e0ef;color:#5c4d7a}.m{margin-top:4px;font-size:12px;color:var(--mut)}
+.ck{position:absolute;top:8px;left:8px;z-index:1;background:#fffffff2;border-radius:8px;padding:5px 6px;display:flex;box-shadow:0 1px 5px #0005}
+.ck input,td.ckc input,th.ckc input{width:22px;height:22px;margin:0;padding:0;accent-color:#7c4dff}
+.ckc{width:34px;text-align:center}td.n{white-space:nowrap;text-align:right}th.n{text-align:right}
+@media(max-width:600px){#list td,#list th{padding:5px 4px}.th{width:40px;height:40px}#list .ch{font-size:10px;padding:1px 6px}}
+header .tab{display:none!important}
+#dlg{max-height:92vh;overflow-y:auto}
+.ttl{font-size:20px!important;font-weight:700}
+#flt.on{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:45vh;overflow:auto;z-index:60;border-radius:18px 18px 0 0;margin:0;box-shadow:0 -8px 28px #0005;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#st.big{font-size:17px!important;font-weight:700!important;color:#5b3bd6!important;padding:6px 12px!important}
+#sibl{font-size:12px!important;font-weight:400!important;color:var(--mut)!important;margin:6px 0!important}
+#sibsel button{min-height:52px;font-size:16px}
+.t b{font-size:12px!important;font-weight:500!important;color:inherit!important;margin-bottom:2px!important}
+#name{font-size:14px!important;font-weight:500!important;color:#5b5670!important;padding:8px 10px!important}
+
+.fh{background:none!important;color:var(--mut)!important;padding:0 0 2px!important;font-size:12px!important;font-weight:400!important;border-radius:0!important}
+.fh b{font-size:12px!important;font-weight:400!important;color:var(--mut)!important}
+#name.ttl{font-size:19px!important;font-weight:600!important;color:var(--tx)!important;padding:12px!important;border-radius:12px!important}
+/* ===== Diseño cómodo para móvil (iPhone / Android) ===== */
+body{font-size:16px;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+input,select,textarea,button{min-height:44px;font-size:16px}
+input[type=checkbox],input[type=radio]{min-height:auto;width:22px;height:22px;accent-color:#7c4dff}
+header{padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+header h1{font-size:22px}
+header button{min-height:44px;padding:0 14px;border-radius:14px;box-shadow:0 2px 6px #0002}
+#q{min-height:48px;font-size:16px;border-radius:14px;padding:10px 14px}
+#grid{padding:6px 12px calc(96px + env(safe-area-inset-bottom))}
+.t{padding:8px 10px;font-size:13px}
+.b,.ch{font-size:12px;padding:3px 10px}
+#st{font-size:14px;padding:10px 14px}
+.ck{top:10px;left:10px;padding:8px;border-radius:10px}
+.ck input{width:26px;height:26px}
+.card .m{font-size:13px}
+#list{padding:0 8px 96px}
+#list td,#list th{padding:10px 8px;font-size:14px}#list td.ds{white-space:normal;max-width:280px;font-size:13px;color:var(--mut)}
+#tools{padding:10px 12px 0}
+#tools button,#acts button,#masr button,#sy,#syr{min-height:48px;padding:0 16px;border-radius:14px;font-size:16px}
+#sy,#syr{margin-left:auto}
+.fp input:not([type=checkbox]),.fp select{min-height:48px}
+#bar{padding:12px 12px calc(12px + env(safe-area-inset-bottom));gap:10px}
+#bar button{min-height:48px;font-size:16px;padding:0 16px;border-radius:14px}
+dialog{width:94vw;border-radius:22px}
+dialog button{min-height:48px;padding:0 16px;border-radius:14px}
+dialog input,dialog select,dialog textarea{font-size:16px;min-height:48px}
+.gr{grid-template-columns:1fr 1fr}
+.lr select,.lr input{min-height:44px}
+#sibsel button{min-height:56px}
+/* ===== Filtros cómodos en móvil ===== */
+@media(max-width:699px),(pointer:coarse){
+#flt.on{top:0;bottom:0;left:0;right:0;height:100vh;height:100dvh;max-height:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(14px + env(safe-area-inset-top)) 16px 0;gap:10px;border-radius:0;background:var(--bg);z-index:70}
+#flt>div{flex:1 1 100%;min-width:0}
+#flt label{font-size:14px;margin:8px 0 4px;color:var(--fg)}
+#flt input:not([type=checkbox]),#flt select{min-height:52px;font-size:17px;border-radius:14px;padding:10px 14px}
+#flt input[type=checkbox]{width:26px;height:26px;min-height:auto}
+#flt button{min-height:52px!important;font-size:16px;border-radius:14px;width:100%}
+#fx{position:sticky;bottom:0;min-height:56px!important;font-size:17px;border-radius:14px;width:100%;margin-top:auto;box-shadow:0 -6px 14px var(--bg);padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+}
+</style></head><body>
+<header><div class="row" style="margin:0"><h1>✨ Mi Inventario</h1><button class="tab" data-i="casa">🏠 Casa</button></div>
+<div class="row" style="flex-wrap:wrap"><input id="q" type="search" placeholder="Buscar: cadena oro medalla…" style="flex:1 1 320px;min-width:200px"><div id="acts" style="display:contents"><button id="vw">☰ Lista</button><button id="sc">📷 Escanear</button><button id="sl">☑ Seleccionar</button><button id="mm">⋯ Más</button></div><button id="ft">🔎 Filtros<span id="fn"></span></button><button id="fc">✖ Limpiar todo</button><button class="p" id="new">＋ Nuevo</button></div><div class="row" id="masr" hidden><button id="lm">📍 Ubicaciones</button><button id="cm">🏷 Categorías</button><button id="imp">⬇ Importar</button><button id="sy">☁ Sincronizar</button><button id="syr" title="Borra en la nube lo que no esté en este dispositivo">⬆ Sustituir la nube</button><button id="dupb">🔍 Duplicados</button><button id="expb">⬆ Exportar</button></div></header>
+<div id="tools"><div class="fp" id="flt">
+
+<div><label>📍 Ubicación</label><select id="loc"></select></div>
+<div><label>🏷 Categoría</label><select id="cat"></select></div>
+<div><label>Marca</label><select id="brf"></select></div>
+<div><label>🔖 Etiqueta</label><select id="tgf"></select></div>
+<div><label>📷 Foto</label><select id="pf"><option value="">Todos</option><option value="con">Con foto</option><option value="sin">Sin foto</option></select></div>
+<div><label>Estado</label><select id="es"><option value="">Activos</option><option value="ret">Retirados</option><option value="all" selected>Todos</option></select></div>
+<div><label>↕ Ordenar por</label><select id="so"></select><button id="sdir" style="margin-top:4px;width:100%"></button></div>
+<div style="flex:2 1 360px;min-width:300px"><label>📅 Fecha (año, mes/año o día/mes/año)</label><div class="dr"><select id="df"></select><input id="d1" inputmode="numeric" placeholder="desde 2022" autocomplete="off"><input id="d2" inputmode="numeric" placeholder="hasta 03/2024" autocomplete="off"></div></div>
+<div><label style="display:flex;align-items:center;gap:6px;color:var(--fg)"><input type="checkbox" id="rp" style="width:auto"> 🛒 a reponer</label></div>
+</div>
+</div>
+<div id="rs"></div><div id="st"></div><div id="grid"></div><div id="list" hidden></div><div id="pr"></div>
+<input type="file" id="fi" multiple hidden accept=".csv,.json,.zip,.xlsx">
+<dialog id="xd"><b>Exportar</b><p style="font-size:13px;color:var(--mut)">Excel, PDF y CSV llevan lo que ves ahora en pantalla (filtros incluidos).</p>
+<button class="xb" id="x1">📦 Copia completa / sincronizar (ZIP con fotos)</button><button class="xb" id="x2">📗 Excel (.xlsx)</button><button class="xb" id="x3">📄 PDF (se abre «imprimir» → guardar como PDF)</button><button class="xb" id="x4">🧾 CSV</button>
+<p style="font-size:12px;color:var(--mut)"><b>Sincronizar entre dispositivos:</b> exporta el ZIP, guárdalo en iCloud Drive / Google Drive / OneDrive, y en el otro dispositivo usa «Importar» con ese ZIP. Se fusionan los cambios (gana el más reciente) y nada se pisa a ciegas.</p><button class="xb" onclick="xd.close()">Cerrar</button></dialog>
+<dialog id="dlg"><form method="dialog" id="f" class="fx">
+<div class="fh"><b>Artículo</b></div>
+<div class="fi"><textarea id="name" class="ttl" required rows="2" placeholder="Nombre del artículo" style="resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea></div>
+<div class="fi"><label>Foto (hasta 3; ★ marca la portada)</label><div id="pvs" class="pvs"></div><input type="file" id="ph" accept="image/*" multiple><div class="fr" style="margin-top:6px"><button type="button" id="ai" hidden>IA</button> <small id="aim"></small></div></div>
+
+<div class="gr" style="grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr) minmax(0,1.3fr)"><div class="fi"><label>Fecha compra</label><input id="date" type="date"></div><div class="fi"><label>Precio €</label><input id="price" type="number" step="0.01"></div><div class="fi"><label>Código de barras</label><span style="display:flex;gap:6px"><input id="code" inputmode="numeric" style="flex:1;min-width:0"><button type="button" id="scanf" title="Escanear" style="min-width:44px">📷</button></span></div></div>
+<div class="gr" style="grid-template-columns:minmax(0,.6fr) minmax(0,1fr) minmax(0,1fr)"><div class="fi"><label>Talla</label><input id="talla"></div><div class="fi" style="display:none"><label>Marca</label><input id="brand"></div><div class="fi"><label>Modelo</label><input id="model"></div></div>
+<div id="sibbox" class="fi" hidden><label id="sibl">Este artículo está en</label><div id="sibsel" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div></div>
+<button type="button" id="lote" hidden style="margin:4px 0 8px">+ Añadir lote (otra caducidad)</button>
+<div class="fi"><label>Ubicación (niveles con >)</label><textarea id="location" rows="2"></textarea><div id="locsug" class="sug"></div><datalist id="locs"></datalist></div>
+<div class="gr" style="grid-template-columns:minmax(0,.55fr) minmax(0,1.25fr) minmax(0,.6fr) minmax(0,.6fr)"><div class="fi"><label id="qtyl">Cantidad</label><input id="qty" type="number" min="0" step="any"></div><div class="fi"><label>Caducidad</label><input id="exp" type="date"></div><div class="fi"><label>Mínima</label><input id="min" type="number" min="0" step="any"></div><div class="fi"><label>Unidad</label><input id="unit"></div></div>
+<div class="gr"><div class="fi"><label>Categoría</label><input id="category" list="cats"></div><div class="fi"><label>Clase (medicamentos)</label><input id="clase" list="clases" placeholder="Antibiótico, analgésico…"><datalist id="clases"><option>Antibiótico</option><option>Analgésico</option><option>Antiinflamatorio</option><option>Antihistamínico</option><option>Antiséptico</option><option>Otro</option></datalist></div></div>
+<div class="fi"><label id="notesL">Descripción</label><textarea id="notes" rows="2"></textarea></div>
+<div class="fi"><label>Etiquetas (separadas por coma)</label><input id="tags"></div>
+<div class="fi"><label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="out" style="width:auto;min-height:auto"> Retirado (sale del recuento; fecha y motivo son opcionales)</label></div>
+<div class="gr"><div class="fi"><label>Fecha de retirada</label><div class="fr"><input id="ret" type="date"><button type="button" id="rethoy">Hoy</button></div></div><div class="fi"><label>Motivo</label><input id="retWhy" list="rm" placeholder="Vendido, regalado, tirado…" autocomplete="off"><datalist id="rm"><option value="Vendido"><option value="Regalado"><option value="Donado"><option value="Tirado"><option value="Roto"><option value="Perdido"><option value="Consumido"><option value="Caducado"></datalist></div></div>
+<div class="fbtn" style="position:sticky;bottom:-14px;background:var(--bg);padding:8px 0 6px;border-top:1px solid var(--line);z-index:3"><button type="button" id="del">Borrar</button><button type="button" id="dup" hidden>⧉ Duplicar</button><span><button type="button" id="cx">Cancelar</button> <button id="ok" value="ok" class="fok">Guardar</button></span></div>
+<div id="lb"><img id="lbi" alt=""></div></form></dialog>
+<dialog id="ld"><b>📍 Ubicaciones</b><p style="font-size:13px;color:var(--mut)">Escribe a la derecha el nombre nuevo (las que coincidan se fusionan). Los niveles se separan con >, p. ej. «Dormitorio > Armario > Balda 1»; al renombrar «Dormitorio» se renombra todo lo que hay dentro. «Sugerir» propone agrupar, por ejemplo, «Balda 1 Puerta 3 Armario 1 Vestidor» en «Vestidor». <b>Haz antes una copia ZIP</b> por seguridad.</p>
+<label style="display:flex;gap:6px;align-items:center;color:var(--fg);font-size:13px"><input type="checkbox" id="ld-mv" checked style="width:auto"> Pasar el detalle (balda, cajón…) a la descripción</label>
+<div id="ld-t" style="max-height:48vh;overflow:auto"></div><p><button type="button" id="ld-s">✨ Sugerir agrupación</button> <button type="button" id="ld-a" style="background:#7c4dff;color:#fff">Aplicar</button> <button type="button" id="ld-u" hidden>↩ Deshacer</button> <button type="button" onclick="ld.close()">Cerrar</button></p></dialog>
+<dialog id="sd"><b>📷 Escanear o identificar</b><p style="font-size:13px;color:var(--mut)">Haz la foto de cerca y enfocada. Funciona en iPhone y Android.</p>
+<button class="xb" id="s1">▮▯▮ Foto del código de barras</button>
+<button class="xb" id="s2" hidden></button><details hidden><summary>IA</summary><input id="k" type="password" autocomplete="off"><input id="mo" value="claude-haiku-5-5"><button type="button" id="ks" class="xb">Guardar</button></details>
+<label>…o escribe el código</label><div style="display:flex;gap:6px"><input id="s-c" inputmode="numeric" placeholder="8410000000000"><button type="button" id="s3">Buscar</button></div>
+<p id="s-m" style="font-size:13px"></p>
+<p><button type="button" onclick="sd.close()" class="xb">Cerrar</button></p><input type="file" id="sf" accept="image/*" capture="environment" hidden></dialog>
+<datalist id="cats"></datalist>
+<dialog id="md"><b>⬇ Importar tabla (Excel o CSV)</b><p id="md-i" style="font-size:13px;color:var(--mut)"></p>
+<div id="md-s"><label>Hoja del Excel</label><select id="md-sh"></select></div>
+<select id="md-t" hidden><option value="casa">🏠 Casa</option></select>
+<p style="font-size:12px;color:var(--mut);margin:8px 0 2px">Para cada dato elige qué columna de tu tabla lo contiene (ya he propuesto las que coinciden). No hace falta que tenga todas.</p>
+<div id="md-m" style="max-height:34vh;overflow:auto"></div>
+<input type="checkbox" id="md-c" checked hidden><div style="font-size:13px;color:var(--fg);display:grid;gap:8px"><label style="display:flex;gap:6px;align-items:flex-start"><input type="radio" name="mm" value="add" checked style="width:auto;margin-top:3px"><span><b>Añadir</b>: suma los artículos nuevos y completa los campos vacíos de los que ya existen. No quita nada.</span></label><label style="display:flex;gap:6px;align-items:flex-start"><input type="radio" name="mm" value="rep" style="width:auto;margin-top:3px"><span><b>Sustituir</b>: deja el inventario igual que la tabla. Los artículos que no estén en la tabla se quitan. Las fotos de los que sí están se conservan.</span></label></div>
+<p id="md-p" style="font-size:13px"></p><p><button type="button" id="md-x">Cancelar</button> <button type="button" id="md-ok" style="background:#7c4dff;color:#fff">Importar</button></p></dialog>
+<div id="bar"><b id="bn"></b><button id="ba">Todo lo visible</button><button id="bz">Ninguno</button><button id="be" class="p" style="background:#7c4dff;color:#fff">✏ Editar selección</button><button id="bx">Salir</button></div>
+<dialog id="bd"><b>✏ Editar selección</b><p id="bd-n" style="font-size:13px;color:var(--mut)"></p>
+<label>Mover a ubicación (vacío = no cambiar)</label><input id="b-l" list="locs"><label>Categoría (vacío = no cambiar)</label><input id="b-c" list="cats"><label>Mover a inventario (vacío = no mover)</label><select id="b-inv"><option value="">No mover</option><option value="casa">📦 Casa</option><option value="des">🛒 Despensa</option><option value="bot">🏥 Botiquín</option></select>
+<label>Añadir etiquetas (separadas por coma)</label><input id="b-t"><label>Quitar etiquetas</label><input id="b-r"><label>Retirar: fecha (vacío = no cambiar)</label><input id="b-rd" type="date"><label>Motivo de retirada</label><input id="b-rw" list="rm" autocomplete="off"><label style="display:flex;gap:6px;align-items:center;color:var(--fg)"><input type="checkbox" id="b-un" style="width:auto"> Quitar la retirada (volver a activos)</label>
+<label>Marca (vacío = no cambiar)</label><input id="b-br"><label>Modelo (vacío = no cambiar)</label><input id="b-mo"><label>Talla (vacío = no cambiar)</label><input id="b-ta"><label>Clase (vacío = no cambiar)</label><input id="b-cl"><label>Unidad (vacío = no cambiar)</label><input id="b-uni"><label>Cantidad mínima (vacío = no cambiar)</label><input id="b-mi" type="number" step="any"><label>Precio (vacío = no cambiar)</label><input id="b-pr" type="number" step="0.01"><label>Fecha de compra (vacío = no cambiar)</label><input id="b-da" type="date"><label>Caducidad (vacío = no cambiar)</label><input id="b-ex" type="date"><label>Notas (vacío = no cambiar; sustituye las actuales)</label><textarea id="b-no" rows="2"></textarea><p><button type="button" id="b-d">🗑 Borrar</button> <button type="button" onclick="bd.close()">Cancelar</button> <button type="button" id="b-ok" style="background:#7c4dff;color:#fff">Aplicar</button></p></dialog>
+<dialog id="dupd" style="width:min(720px,96vw)"><b>🔍 Posibles duplicados</b><p style="font-size:13px;color:var(--mut)">Fichas con nombre parecido o la misma foto. Ninguna viene marcada. Solo se borran las que marques. Si no son duplicados (por ejemplo, dos dispensadores de jabón), pulsa «No son duplicados» y no volverán a salir. Siempre queda al menos una ficha por grupo. Los lotes con distinta caducidad no aparecen aquí.</p><div id="dup-l" style="max-height:60vh;overflow:auto"></div><p><button type="button" id="dup-go" style="background:#7c4dff;color:#fff">Borrar marcadas</button> <button type="button" onclick="$('#dupd').close()">Cerrar</button></p></dialog>
+<dialog id="cd"><b>🏷 Categorías</b><p style="font-size:13px;color:var(--mut)">Cambia el nombre a la derecha (si coincide con otra se fusionan; vacío = quitar la categoría).</p><div id="cd-t" style="max-height:44vh;overflow:auto"></div>
+<label>Nueva categoría</label><div style="display:flex;gap:6px"><input id="cd-n" placeholder="Bolsos"><button type="button" id="cd-add">Añadir</button></div>
+<p><button type="button" id="cd-a" style="background:#7c4dff;color:#fff">Aplicar cambios</button> <button type="button" onclick="cd.close()">Cerrar</button></p></dialog>
+<script>
+const $=s=>document.querySelector(s),xd=$('#xd');
+const FIELDS=['name','location','brand','model','talla','clase','category','code','qty','min','unit','price','date','exp','ret','retWhy','tags','notes'];
+const HEAD={id:'ID',talla:'Talla',clase:'Clase',name:'Nombre',location:'Ubicación',brand:'Marca',model:'Modelo',category:'Categoría',code:'Código de barras',qty:'Cantidad',min:'Cant. mínima',unit:'Unidad',price:'Precio',date:'Fecha compra',exp:'Caducidad',ret:'Fecha retirada',retWhy:'Motivo retirada',tags:'Etiquetas',notes:'Notas'};
+const EMO={casa:'📦',des:'<svg viewBox="0 0 64 64" style="width:2.6em;height:2.6em;vertical-align:-0.5em"><path d="M4 12h8l6 28h30l5-20H16" fill="none" stroke="#534AB7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><rect x="18" y="20" width="10" height="10" rx="2" fill="#EF9F27"/><rect x="30" y="20" width="10" height="10" rx="2" fill="#E24B4A"/><rect x="42" y="20" width="8" height="10" rx="2" fill="#97C459"/><circle cx="22" cy="48" r="5" fill="#534AB7"/><circle cx="44" cy="48" r="5" fill="#534AB7"/></svg>',bot:'<svg viewBox="0 0 24 24" style="width:1.8em;height:1.8em;vertical-align:-0.35em"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff" stroke="#e53935" stroke-width="2"/><path d="M9.5 4h5v5.5H20v5h-5.5V20h-5v-5.5H4v-5h5.5z" fill="#e53935"/></svg>'};const SEP='>',paths=l=>{const p=(l||'').split(SEP),o=[];if(!l)return o;for(let k=1;k<=p.length;k++)o.push(p.slice(0,k).join(SEP));return o},inLoc=(a,b)=>a==b||(a||'').startsWith(b+SEP),tl=s=>(s||'').split(',').map(x=>x.trim()).filter(Boolean),fixLoc=v=>(v||'').split(/\s*[>>]\s*/).filter(Boolean).join(SEP),remap=(l,m)=>{const k=Object.keys(m).filter(k=>l==k||l.startsWith(k+SEP)).sort((a,b)=>b.length-a.length)[0];return k===undefined?l:fixLoc(m[k]+l.slice(k.length))};let XC=[],selOn=false;const S=new Set();let items=[],db,cur=null,inv='casa',view='grid',shown=[];
+const flash=m=>{st(m);$('#st').dataset.k=1;setTimeout(()=>{delete $('#st').dataset.k;render()},6000)};
+const normF=(f,v)=>{v=String(v||'').trim();return(f=='location'||f=='category')?v.replace(/\s*[>>]\s*/g,'>'):v},uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),nextId=()=>uid(),st=m=>$('#st').textContent=m;
+const h=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const open=()=>new Promise((r,j)=>{const q=indexedDB.open('inv',1);q.onupgradeneeded=()=>{q.result.createObjectStore('items',{keyPath:'id'});q.result.createObjectStore('photos')};q.onsuccess=()=>r(q.result);q.onerror=j});
+const tx=(s,m,f)=>new Promise((r,j)=>{const t=db.transaction(s,m),o=f(t.objectStore(s));t.oncomplete=()=>r(o&&o.result);t.onerror=j});
+const putI=i=>tx('items','readwrite',s=>s.put(i)),getP=id=>tx('photos','readonly',s=>s.get(id)),putP=(id,b)=>tx('photos','readwrite',s=>s.put(b,id)),delP=id=>tx('photos','readwrite',s=>s.delete(id));
+const norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const key=i=>norm(i.name)+'|'+norm(i.location)+'|'+(i.exp||''),invOf=i=>i.inv||'casa',pks=i=>Array.isArray(i.phs)&&i.phs.length?i.phs:(i.ph?[String(i.id)]:[]);
+let PKG={};const gkey=x=>norm(x.name)+'|'+norm(x.code||''),phOf=i=>!!(pks(i).length||PKG[gkey(i)]),pk0=i=>pks(i)[0]||PKG[gkey(i)]||'';
+async function shrink(file){const b=await createImageBitmap(file),k=Math.min(1,1000/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=b.width*k;c.height=b.height*k;c.getContext('2d').drawImage(b,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.82))}
+// ---- CSV
+function csv(t){const r=[];let row=[],f='',q=false;t=t.replace(/^\uFEFF/,'');for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const hd=r.shift().map(x=>x.trim());return r.filter(x=>x.length>1).map(x=>Object.fromEntries(hd.map((k,i)=>[k,(x[i]??'').trim()])))}
+const esc=v=>{v=v==null?'':String(v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+const toCsv=(rows,cols)=>'\uFEFF'+[cols.join(','),...rows.map(r=>cols.map(k=>esc(r[k])).join(','))].join('\r\n');
+const AL={id:['id','identificador'],name:['name','nombre','producto','titulo','title','articulo','item','nombre del producto'],location:['location','ubicacion','lugar','zona','almacenaje','almacen','donde','en donde','sitio','localizacion'],brand:['brand','marca','laboratorio'],model:['model','modelo','formato'],category:['category','categoria','categorias','tipo'],qty:['quantity','qty','cantidad','unidades','stock','dosis quedan'],unit:['unit','unidad'],code:['barcode','codigo de barras','codigo','ean','upc','codigo barras'],min:['cantidad minima','minimo','minima','stock minimo','min'],price:['price','precio','purchase price','valor','value'],date:['purchase date','fecha de compra','fecha compra','comprado el','comprado','fecha de adquisicion','adquirido','fecha','date'],exp:['expiry','expiration','expiration date','expiry date','caducidad','fecha de caducidad','fecha caducidad','vencimiento','best before','consumir antes de'],ret:['fecha de retirada','fecha retirada','retirada','fecha de baja','baja'],retWhy:['motivo de retirada','motivo retirada','motivo','motivo de baja'],tags:['tags','etiquetas','user tags'],notes:['notes','notas','nota','description','descripcion','comentarios','comentario','observaciones','observacion']};
+function fromCsv(rows){const hd=Object.keys(rows[0]||{}),out=[];
+ if(hd.includes('parent space title')){const tg=hd.slice(7,17);for(const r of rows){if(r.type!='ITEM')continue;const t=[...(r.tags||'').split(','),...tg.filter(k=>r[k]=='Y').map(k=>k.trim())].map(x=>x.trim()).filter(Boolean);
+  out.push({name:r.title,location:r['parent space title'],qty:r.quantity?Math.round(r.quantity):1,price:+r.value>0?r.value:'',date:r['important date'],notes:r.notes,tags:[...new Set(t)].join(', ')})}}
+ else if(hd.includes('Name')&&hd.includes('Status')){for(const r of rows){const m=r.Name.match(/^(.*\S)\s+-(?:\s+(.*))?$/),d=r.Description&&r.Description!=r.Name?r.Description:'';
+  out.push({name:m?m[1]:r.Name,location:m?(m[2]||''):(r.Location||''),brand:r.Brand,model:r.Model,category:r.Category,price:r['Purchase Price'],date:r['Purchase Date'],notes:d,tags:r['User Tags']})}}
+ else{const mp={};for(const f in AL){const k=hd.find(x=>AL[f].includes(norm(x)));if(k)mp[f]=k}
+  for(const r of rows){const o={};for(const f in mp)o[f]=r[mp[f]];if(!hd.includes('inv'))delete o.inv;if(r.inv)o.inv=r.inv;if(r.id)o.id=r.id;out.push(o)}}
+ return out}
+// ---- ZIP
+const T=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=b=>{let c=-1;for(let i=0;i<b.length;i++)c=T[(c^b[i])&255]^(c>>>8);return(c^-1)>>>0};
+function zip(files,type){const ch=[],cd=[],enc=new TextEncoder();let off=0,sz=0;
+ for(const f of files){const n=enc.encode(f.n),c=crc(f.d),L=f.d.length,hh=new DataView(new ArrayBuffer(30)),e=new DataView(new ArrayBuffer(46));
+  hh.setUint32(0,0x04034b50,true);hh.setUint16(4,20,true);hh.setUint16(6,0x800,true);hh.setUint32(14,c,true);hh.setUint32(18,L,true);hh.setUint32(22,L,true);hh.setUint16(26,n.length,true);
+  e.setUint32(0,0x02014b50,true);e.setUint16(4,20,true);e.setUint16(6,20,true);e.setUint16(8,0x800,true);e.setUint32(16,c,true);e.setUint32(20,L,true);e.setUint32(24,L,true);e.setUint16(28,n.length,true);e.setUint32(42,off,true);
+  ch.push(hh.buffer,n,f.d);cd.push(e.buffer,n);off+=30+n.length+L;sz+=46+n.length}
+ const z=new DataView(new ArrayBuffer(22));z.setUint32(0,0x06054b50,true);z.setUint16(8,files.length,true);z.setUint16(10,files.length,true);z.setUint32(12,sz,true);z.setUint32(16,off,true);
+ return new Blob([...ch,...cd,z.buffer],{type:type||'application/zip'})}
+async function unzip(buf){const v=new DataView(buf),u=new Uint8Array(buf),dec=new TextDecoder(),out={};let e=buf.byteLength-22;while(e>=0&&v.getUint32(e,true)!=0x06054b50)e--;
+ const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);
+ for(let i=0;i<n;i++){const m=v.getUint16(p+10,true),cs=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),lo=v.getUint32(p+42,true),name=dec.decode(u.subarray(p+46,p+46+nl));p+=46+nl+xl+cl;
+  const ds=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true);let d=u.subarray(ds,ds+cs);
+  if(m==8)d=new Uint8Array(await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  if(!name.endsWith('/'))out[name]=d}return out}
+// ---- Excel (.xlsx mínimo)
+function xlsx(rows,cols,name){const x=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])),L=n=>String.fromCharCode(65+n),enc=s=>({n:'',d:new TextEncoder().encode(s)});
+ const cell=(v,a,hd)=>v===''||v==null?'':(typeof v=='number'?`<c r="${a}"><v>${v}</v></c>`:`<c r="${a}"${hd?' s="1"':''} t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`);
+ const num=(k,v)=>(k=='qty'||k=='price')&&v!==''&&v!=null&&isFinite(v)?+v:v;
+ let d=`<row r="1">${cols.map((k,c)=>cell(HEAD[k],L(c)+1,1)).join('')}</row>`;
+ rows.forEach((r,i)=>d+=`<row r="${i+2}">${cols.map((k,c)=>cell(num(k,r[k]),L(c)+(i+2))).join('')}</row>`);
+ const W=cols.map((k,c)=>`<col min="${c+1}" max="${c+1}" width="${k=='notes'?50:k=='name'?40:16}" customWidth="1"/>`).join('');
+ const hd='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n',NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',R='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+ const F=[['[Content_Types].xml',`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`],
+ ['_rels/.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+ ['xl/workbook.xml',`<workbook ${NS} xmlns:r="${R}"><sheets><sheet name="${x(name)}" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+ ['xl/_rels/workbook.xml.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${R}/styles" Target="styles.xml"/></Relationships>`],
+ ['xl/styles.xml',`<styleSheet ${NS}><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
+ ['xl/worksheets/sheet1.xml',`<worksheet ${NS}><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${W}</cols><sheetData>${d}</sheetData><autoFilter ref="A1:${L(cols.length-1)}${rows.length+1}"/></worksheet>`]];
+ return zip(F.map(([n,c])=>({n,d:new TextEncoder().encode(hd+c)})),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+// ---- Leer Excel (.xlsx)
+async function readXlsx(buf,sel=0){const z=await unzip(buf),dec=new TextDecoder(),P=s=>new DOMParser().parseFromString(s,'text/xml');
+ const ss=z['xl/sharedStrings.xml']?[...P(dec.decode(z['xl/sharedStrings.xml'])).getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join('')):[];
+ const sty=z['xl/styles.xml']?P(dec.decode(z['xl/styles.xml'])):null,cust={};
+ if(sty)[...sty.getElementsByTagName('numFmt')].forEach(n=>cust[n.getAttribute('numFmtId')]=n.getAttribute('formatCode'));
+ const isD=id=>/^(1[4-9]|2[0-2]|4[5-7])$/.test(id)||(cust[id]&&/[dy]/i.test(cust[id].replace(/\[.*?\]|"[^"]*"/g,'')));
+ const xfs=sty?[...sty.getElementsByTagName('cellXfs')[0].getElementsByTagName('xf')].map(x=>isD(x.getAttribute('numFmtId')||'0')):[];
+ const names=[],paths=[];
+ try{const wb=P(dec.decode(z['xl/workbook.xml'])),rl=P(dec.decode(z['xl/_rels/workbook.xml.rels'])),tg={};
+  [...rl.getElementsByTagName('Relationship')].forEach(r=>tg[r.getAttribute('Id')]=r.getAttribute('Target'));
+  [...wb.getElementsByTagName('sheet')].forEach(s=>{const t=tg[s.getAttribute('r:id')||s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')];if(t&&z[t.startsWith('/')?t.slice(1):'xl/'+t]){names.push(s.getAttribute('name'));paths.push(t.startsWith('/')?t.slice(1):'xl/'+t)}})}catch(e){}
+ if(!paths.length)Object.keys(z).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort().forEach((k,i)=>{names.push('Hoja '+(i+1));paths.push(k)});
+ const sh=z[paths[sel]]||z[paths[0]];if(!sh)return{names,rows:[]};
+ let rows=[...P(dec.decode(sh)).getElementsByTagName('row')].map(r=>{const o=[];
+  for(const c of r.getElementsByTagName('c')){const col=(c.getAttribute('r')||'A').replace(/\d+/,'').split('').reduce((a,ch)=>a*26+ch.charCodeAt(0)-64,0)-1,t=c.getAttribute('t'),v=c.getElementsByTagName('v')[0],is=c.getElementsByTagName('t')[0];let val='';
+   if(t=='s'&&v)val=ss[+v.textContent];else if(t=='inlineStr'&&is)val=is.textContent;else if(t=='d'&&v)val=v.textContent.slice(0,10);
+   else if(v){val=v.textContent;if((!t||t=='n')&&xfs[+c.getAttribute('s')||0]&&isFinite(val))val=new Date(Math.round((+val-25569)*864e5)).toISOString().slice(0,10)}
+   o[col]=val}return o}).filter(r=>r.some(x=>x!==''&&x!=null));
+ let hi=rows.findIndex(r=>r.filter(x=>x!==''&&x!=null).length>=2);if(hi<0)hi=0;rows=rows.slice(hi);
+ const h0=rows.shift()||[],n=Math.max(h0.length,...rows.slice(0,300).map(r=>r.length)),seen={},
+  hd=Array.from({length:n},(_,i)=>{let k=String(h0[i]??'').trim()||`Columna ${i+1}`;if(seen[k])k+=` (${++seen[k]})`;else seen[k]=1;return k});
+ return{names,rows:rows.map(r=>Object.fromEntries(hd.map((k,i)=>[k,String(r[i]??'').trim()])))}}
+// ---- Importar / sincronizar
+const touch=i=>{i.upd=Date.now();return i};
+async function merge(list,tg=inv,fill=true){const itemById=new Map(items.filter(i=>!i.del).map(i=>[String(i.id),i]));const q1=n=>n.qty===''||n.qty==null?1:(+n.qty||0);
+ if(tg!='casa'){const g=new Map();for(const n of list){const k=[norm(n.name),norm(n.location),n.exp||''].join('|');if(g.has(k)){const a=g.get(k);a.qty=(+a.qty||0)+q1(n)}else g.set(k,{...n,qty:q1(n)})}list=[...g.values()]}
+ const idx=new Map(items.filter(i=>!i.del).map(i=>[key(i),i]));let add=0,mer=0,dup=0;
+ for(const n of list){if(!n.name)continue;n.inv=tg;const k=key(n),o=(n.id&&itemById.get(String(n.id)))||idx.get(k);
+  if(o){let ch=0;if(fill)for(const f of FIELDS){if(f=='tags'){const t=[...new Set([...(o.tags||'').split(','),...(n.tags||'').split(',')].map(x=>x.trim()).filter(Boolean))].join(', ');if(t!=(o.tags||'')){o.tags=t;ch=1}}else if(!o[f]&&n[f]){o[f]=n[f];ch=1}}if(ch){await putI(touch(o));mer++}else dup++}
+  else{const i=touch({id:nextId(),inv:tg,...Object.fromEntries(FIELDS.map(f=>[f,n[f]||''])),qty:n.qty===''||n.qty==null?1:+n.qty});i.cre=Date.now()+add;items.push(i);idx.set(k,i);await putI(i);add++}}
+ return`${add} nuevos · ${mer} completados · ${dup} ya existían`}
+async function reemplazar(list,tg){const cur=items.filter(i=>!i.del),byId=new Map(cur.map(i=>[String(i.id),i])),byKey=new Map(cur.map(i=>[key(i),i])),usados=new Set();let nue=0,act=0;
+ for(const n of list){if(!n.name)continue;n.inv=tg;let o=(n.id&&byId.get(String(n.id)))||byKey.get(key(n));if(o&&usados.has(o))o=null;
+  if(o){usados.add(o);for(const f of FIELDS)if(n[f]!==undefined)o[f]=n[f];if(n.qty!==undefined)o.qty=n.qty===''||n.qty==null?1:+n.qty;o.inv=tg;touch(o);await putI(o);act++}
+  else{const i=touch({id:n.id&&!items.some(x=>String(x.id)===String(n.id))?n.id:nextId(),inv:tg,...Object.fromEntries(FIELDS.map(f=>[f,n[f]||''])),qty:n.qty===''||n.qty==null?1:+n.qty});i.cre=Date.now();items.push(i);usados.add(i);await putI(i);nue++}}
+ let bor=0;for(const o of cur){if(!usados.has(o)){o.del=1;touch(o);await putI(o);bor++}}
+ render();return`${nue} nuevos · ${act} actualizados · ${bor} quitados`}
+// ---- Importar una tabla (Excel/CSV) con elección de columnas
+const MF=['id','name','location','category','brand','model','qty','price','date','notes','tags','code','min','unit','exp','ret','retWhy'];
+const num=v=>{v=String(v??'').replace(/[^\d,.\-]/g,'');if(!v)return null;v=v.includes(',')&&v.includes('.')?v.replace(/\./g,'').replace(',','.'):v.replace(',','.');const n=parseFloat(v);return isFinite(n)?n:null};
+const isoD=v=>{v=String(v||'').trim();if(!v)return '';let m,y,mo,d;
+ if(m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(v)){y=m[1];mo=+m[2];d=+m[3]}
+ else if(m=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4}|\d{2})/.exec(v)){y=m[3].length==2?(+m[3]>=50?'19':'20')+m[3]:m[3];mo=+m[2];d=+m[1]}
+ else if(/^\d{6}$/.test(v)){const y=+v.slice(0,4),mo=+v.slice(4,6);return mo>=1&&mo<=12?`${y}-${p2(mo)}-${p2(new Date(y,mo,0).getDate())}`:''}
+ else if(/^\d{5}$/.test(v)&&+v>20000&&+v<80000)return new Date(Math.round((+v-25569)*864e5)).toISOString().slice(0,10);
+ else return '';
+ return mo<1||mo>12||d<1||d>31?'':`${y}-${p2(mo)}-${p2(d)}`};
+const conv=(f,v)=>{v=String(v??'').trim();if(f=='qty'||f=='min'){const n=num(v);return n==null?'':n}if(f=='price'){const n=num(v);return n==null||n<=0?'':String(n)}if(f=='date'||f=='exp'||f=='ret')return isoD(v);return v};
+const guess=hd=>{const used=new Set(),m={};for(const f of MF){const k=hd.find(x=>!used.has(x)&&(AL[f]||[]).includes(norm(x)));if(k){m[f]=k;used.add(k)}}return m};
+let MD=null;
+function mdList(){const o=[];for(const r of MD.rows){const x={};for(const f of MF){const c=MD.map[f];if(c)x[f]=conv(f,r[c])}if(x.id)x.id=/^\d+$/.test(String(x.id).trim())?String(+String(x.id).trim()).padStart(4,'0'):String(x.id).trim();if(x.name)o.push(x)}return o}
+function mdPrev(){const L=mdList(),tg=$('#md-t').value,idx=new Set(items.filter(i=>!i.del).map(key)),seen=new Set();let nw=0,ex=0;
+ for(const n of L){const k=key({...n,inv:tg});if(idx.has(k)||seen.has(k))ex++;else nw++;seen.add(k)}
+ $('#md-p').innerHTML=MD.map.name?`<b>${L.length}</b> filas con nombre (de ${MD.rows.length}) · <b>${nw}</b> nuevas · ${ex} ya existen o están repetidas<span style="color:var(--mut);font-size:12px"><br>Es «el mismo artículo» si coinciden nombre y ubicación.${L.slice(0,3).map(n=>`<br>• ${h(n.name)}${n.location?' — '+h(n.location):''}${n.price?' — '+money(n.price):''}`).join('')}</span>`:'⚠ Elige la columna del <b>Nombre</b>.';
+ $('#md-ok').disabled=!L.length}
+function mdFill(){$('#md-m').innerHTML=MF.map(f=>`<div class="lr"><span>${HEAD[f]}</span><span>←</span><select data-f="${f}"><option value="">— no importar —</option>${MD.hd.map(c=>`<option${MD.map[f]===c?' selected':''}>${h(c)}</option>`).join('')}</select></div>`).join('');mdPrev()}
+function mdSet(rows){MD.rows=rows;MD.hd=Object.keys(rows[0]||{});MD.map=guess(MD.hd);$('#md-i').textContent=`${MD.fname} · ${rows.length} filas`;mdFill()}
+function askMap(rows,fname,book){return new Promise(res=>{MD={res,book,fname};$('#md-t').value=inv;$('#md-c').checked=true;
+ $('#md-s').hidden=!(book&&book.names.length>1);if(book){$('#md-sh').innerHTML=book.names.map((n,k)=>`<option value="${k}">${h(n)}</option>`).join('');$('#md-sh').value=book.sel||0}
+ mdSet(rows);$('#md').showModal()})}
+$('#md-m').onchange=e=>{const f=e.target.dataset.f;if(f){MD.map[f]=e.target.value;mdPrev()}};
+$('#md-t').onchange=()=>mdPrev();
+$('#md-sh').onchange=async()=>{const b=await readXlsx(MD.book.buf,+$('#md-sh').value);mdSet(b.rows)};
+$('#md-ok').onclick=()=>{const r=MD.res,L=mdList();MD.res=null;$('#md').close();r({list:L,tg:$('#md-t').value,fill:true,mode:document.querySelector('input[name=mm]:checked').value})};
+$('#md-x').onclick=()=>$('#md').close();
+$('#md').onclose=()=>{if(MD&&MD.res){const r=MD.res;MD.res=null;r(null)}};
+async function importTable(f,ext){try{let rows,book=null;
+ if(ext=='csv')rows=csv(await f.text());else{const buf=await f.arrayBuffer();book=await readXlsx(buf,0);book.buf=buf;book.sel=0;for(let k=1;!book.rows.length&&k<book.names.length;k++){const b2=await readXlsx(buf,k);if(b2.rows.length){book.rows=b2.rows;book.sel=k}}rows=book.rows}
+ if(!rows.length)return'tabla vacía';const hd=Object.keys(rows[0]);
+ if(hd.includes('parent space title')||(hd.includes('Name')&&hd.includes('Status')))return await merge(fromCsv(rows));
+ const r=await askMap(rows,f.name,book);if(!r)return'cancelado';inv=r.tg;return r.mode=='rep'?await reemplazar(r.list,r.tg):await merge(r.list,r.tg,r.fill)}catch(e){return'no se pudo leer ('+e.message+')'}}
+async function importFiles(files){const msg=[];
+ for(const f of files){const ext=f.name.split('.').pop().toLowerCase();
+  if(ext=='csv'||ext=='xlsx')msg.push(f.name+': '+await importTable(f,ext));
+  else if(ext=='json')msg.push(f.name+': '+await merge(JSON.parse(await f.text())));
+  else if(ext=='zip'){const z=await unzip(await f.arrayBuffer()),dec=new TextDecoder(),tch=new Set();let a=0,u=0,p=0;
+   if(confirm('¿Sustituir TODO lo que tienes por el contenido de este ZIP?\n\nAceptar = sustituir (quita ubicaciones y categorías antiguas)\nCancelar = mezclar con lo que ya tienes')){await tx('items','readwrite',x=>x.clear());await tx('photos','readwrite',x=>x.clear());items.length=0}
+   const zItems=z['items.json']?JSON.parse(dec.decode(z['items.json'])):[],pmap={};for(const o of zItems)for(const q of (o.phs||[]))pmap[q]=o.id;
+   if(z['items.json'])for(const o of zItems){const k=items.findIndex(i=>String(i.id)==String(o.id));
+    if(k<0){items.push(o);await putI(o);tch.add(String(o.id));a++}else if((o.upd||0)>(items[k].upd||0)){items[k]=o;await putI(o);tch.add(String(o.id));u++}}
+   for(const k in z){const m=k.match(/^photos\/(.+)\.jpg$/),base=m&&(pmap[m[1]]??m[1].split('_')[0]),it=base&&items.find(i=>String(i.id)==String(base));if(it){await putP(m[1],new Blob([z[k]],{type:'image/jpeg'}));it.ph=1;if(!Array.isArray(it.phs)||!it.phs.includes(m[1]))it.phs=[...new Set([...pks(it),m[1]])];await putI(it);p++}}
+   msg.push(`${f.name}: ${a} añadidos, ${u} actualizados, ${p} fotos`)}}
+ render();st(msg.join(' · '));$('#st').dataset.k=1;setTimeout(()=>{delete $('#st').dataset.k;render()},6000)}
+// ---- Exportar
+const cols=r=>['id',...FIELDS].filter(k=>r.some(x=>x[k]));
+const stamp=()=>msISO(Date.now()),stampF=(d=new Date())=>''+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+p2(d.getHours())+p2(d.getMinutes()),dl=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()};
+async function exportZip(){st('Preparando copia…');const files=[],enc=new TextEncoder(),live=items.filter(i=>!i.del);
+ const used=new Set(),nm={},san=t=>(t||'').replace(/[\/\\:*?"<>|]/g,'').replace(/\s+/g,' ').trim().slice(0,80);
+ for(const i of live){if(!i.ph)continue;const base=san(i.code?i.code+'_'+i.name:i.name)||('articulo'+i.id);nm[i.id]=[];let j=0;for(const k of pks(i)){let t=base+(j?' ('+(j+1)+')':'');let c=2;while(used.has(t))t=base+' ('+(c++)+')';used.add(t);nm[i.id].push([k,t]);j++}}
+ for(const i of live){if(!nm[i.id])continue;for(const [k,t] of nm[i.id]){const b=await getP(k);if(b)files.push({n:`photos/${t}.jpg`,d:new Uint8Array(await b.arrayBuffer())})}}
+ const outItems=items.map(i=>nm[i.id]?{...i,phs:nm[i.id].map(x=>x[1])}:i);
+ files.unshift({n:'items.json',d:enc.encode(JSON.stringify(outItems))},{n:'items.csv',d:enc.encode(toCsv(live,['id','inv',...FIELDS]))});
+ dl(zip(files),`inventario-${stampF()}.zip`);st(`Exportados ${live.length} artículos y ${files.length-2} fotos`)}
+const invN=v=>({casa:'Casa',des:'Despensa',bot:'Botiquín'})[v];const invName=()=>'Todos';
+async function exportPdf(){st('Preparando PDF…');const pan=inv!='casa',es=$('#es').value;
+ const bl=await Promise.all(shown.map(r=>phOf(r)?getP(pk0(r)).catch(()=>null):null));
+ const rows=shown.map((r,k)=>[r,bl[k]?URL.createObjectURL(bl[k]):'']);
+ const tot=shown.filter(r=>!isRet(r)).reduce((s,r)=>s+(+r.price||0),0),
+  H=['Foto','Nombre','Ubicación','Categoría',...(pan?['Cant.','Caducidad']:[]),'Fecha compra','Precio',...(es?['Retirada · motivo']:[])],
+  now=new Date(),when=`${p2(now.getDate())}/${p2(now.getMonth()+1)}/${now.getFullYear()} ${p2(now.getHours())}:${p2(now.getMinutes())}`;
+ $('#pr').innerHTML=`<h2>${invName()} — ${shown.length} artículos</h2><p>${when}${tot?` · Valor total: ${money(tot)}`:''}</p><table border="1" cellpadding="4" style="border-collapse:collapse;width:100%;table-layout:fixed;overflow-wrap:break-word"><colgroup><col style="width:64px"><col style="width:20%"><col style="width:27%"><col style="width:12%">${pan?'<col style="width:4%"><col style="width:8%">':''}<col style="width:9%"><col style="width:8%">${es?'<col style="width:8%">':''}</colgroup><thead style="display:table-header-group"><tr>${H.map(x=>`<th>${x}</th>`).join('')}</tr></thead>${rows.map(([r,u])=>`<tr style="page-break-inside:avoid"><td>${u?`<img src="${u}" style="width:56px;height:56px;object-fit:contain;background:#fff">`:''}</td><td>${h(r.name)}${isRet(r)?' <b>(Retirado)</b>':''}</td><td>${h(r.location)}</td><td>${h(r.category).replace(/&gt;/g,'&gt;&#8203;')}</td>${pan?`<td>${qtyT(r)}</td><td>${h(dfmt(r.exp))}</td>`:''}<td style="white-space:nowrap">${h(dfmt(r.date))}</td><td style="white-space:nowrap;text-align:right">${money(r.price)}</td>${es?`<td>${h([dfmt(r.ret),r.retWhy].filter(Boolean).join(' · ')||(isRet(r)?'Retirado':''))}</td>`:''}</tr>`).join('')}</table>`;
+ render();await new Promise(r=>setTimeout(r,300));const t0=document.title;document.title=`${invName().toLowerCase()}-${stampF()}`;addEventListener('afterprint',()=>{document.title=t0},{once:true});print()}
+// ---- Código de barras (EAN-13 / EAN-8 / UPC) sin librerías
+const EP=(()=>{const run=s=>{const o=[];let c=s[0],n=0;for(const x of s){if(x==c)n++;else{o.push(n);c=x;n=1}}o.push(n);return o},m=t=>t.split(' ').map(run);
+ return{L:m('0001101 0011001 0010011 0111101 0100011 0110001 0101111 0111011 0110111 0001011'),G:m('0100111 0110011 0011011 0100001 0011101 0111001 0000101 0010001 0001001 0010111'),R:m('1110010 1100110 1101100 1000010 1011100 1001110 1010000 1000100 1001000 1110100')}})();
+const FP='LLLLLL LLGLGG LLGGLG LLGGGL LGLLGG LGGLLG LGGGLL LGLGLG LGLGGL LGGLGL'.split(' ');
+const eanOK=c=>{let s=0;for(let i=0;i<c.length-1;i++)s+=(+c[i])*((c.length-2-i)%2==0?3:1);return(10-s%10)%10==+c[c.length-1]};
+const mt=(w,T)=>{const t=w[0]+w[1]+w[2]+w[3];let b=-1,be=1e9;T.forEach((q,d)=>{let e=0;for(let k=0;k<4;k++)e+=Math.abs(w[k]*7/t-q[k]);if(e<be){be=e;b=d}});return[b,be]};
+function decAt(r,s,hf){const n=11+8*hf;if(s+n>r.length)return null;let tot=0;for(let i=0;i<n;i++)tot+=r[s+i];const u=tot/(11+14*hf),g=[0,1,2,3+4*hf,4+4*hf,5+4*hf,6+4*hf,7+4*hf,8+4*hf+0,9+4*hf+0,10+4*hf+0];
+ for(const i of [0,1,2,3+4*hf,4+4*hf,5+4*hf,6+4*hf,7+4*hf,8+8*hf,9+8*hf,10+8*hf])if(Math.abs(r[s+i]/u-1)>.7)return null;
+ let d='',par='',err=0;for(let j=0;j<hf;j++){const w=r.slice(s+3+4*j,s+7+4*j),a=mt(w,EP.L),b=mt(w,EP.G),x=a[1]<=b[1]?a:b;par+=a[1]<=b[1]?'L':'G';d+=x[0];err+=x[1]}
+ for(let j=0;j<hf;j++){const x=mt(r.slice(s+3+4*hf+5+4*j,s+7+4*hf+5+4*j),EP.R);d+=x[0];err+=x[1]}
+ if(err>hf*2*0.9)return null;if(hf==6){const f=FP.indexOf(par);if(f<0)return null;d=f+d}return eanOK(d)?{code:d,err}:null}
+function scanGray(g,W,H){const votes={},win=Math.max(15,W>>4);
+ for(let k=0;k<45;k++){const y=Math.floor(H*(.06+.88*k/44)),row=g.subarray(y*W,y*W+W),P=new Float64Array(W+1);for(let x=0;x<W;x++)P[x+1]=P[x]+row[x];
+  const bits=new Uint8Array(W);for(let x=0;x<W;x++){const a=Math.max(0,x-win),b=Math.min(W,x+win);bits[x]=row[x]<(P[b]-P[a])/(b-a)?1:0}
+  for(const arr of [bits,bits.slice().reverse()]){const r=[];let c=arr[0],n=0;for(const x of arr){if(x==c)n++;else{r.push(n);c=x;n=1}}r.push(n);const c0=arr[0];
+   for(let s=0;s<r.length-42;s++){if((c0^(s&1))!=1)continue;for(const hf of [6,4]){const o=decAt(r,s,hf);if(o){const v=votes[o.code]||(votes[o.code]={n:0,e:9});v.n++;v.e=Math.min(v.e,o.err)}}}}}
+ let best=null;for(const c in votes){const v=votes[c];if(v.n>=2&&(!best||v.n>votes[best].n))best=c}
+ if(!best)for(const c in votes)if(votes[c].e<.8&&(!best||votes[c].e<votes[best].e))best=c;return best}
+async function readBarcode(blob){const bm=await createImageBitmap(blob);
+ if('BarcodeDetector' in window){try{const r=await new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','qr_code']}).detect(bm);if(r.length)return r[0].rawValue}catch(e){}}
+ for(const S of [1600,1000]){const k=Math.min(1,S/Math.max(bm.width,bm.height)),W=Math.round(bm.width*k),H=Math.round(bm.height*k),c=document.createElement('canvas');c.width=W;c.height=H;const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(bm,0,0,W,H);
+  const d=cx.getImageData(0,0,W,H).data,g=new Uint8Array(W*H);for(let i=0;i<g.length;i++)g[i]=(d[4*i]*77+d[4*i+1]*151+d[4*i+2]*28)>>8;
+  let r=scanGray(g,W,H);if(r)return r;const t=new Uint8Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++)t[x*H+y]=g[y*W+x];r=scanGray(t,H,W);if(r)return r}
+ return null}
+// ---- Búsqueda online por código e IA (opcionales, necesitan internet)
+async function getJ(url){const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),7000);try{const r=await fetch(url,{signal:ctl.signal});if(!r.ok)return{err:'error '+r.status};return{j:await r.json()}}catch(e){return{err:e.name=='AbortError'?'tiempo agotado':'sin conexión o bloqueado por el navegador'}}finally{clearTimeout(t)}}
+async function lookup(code){const errs=[];
+ // 1) Alimentos y cosmética (Open Food Facts)
+ const x=await getJ(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_es,brands,quantity,categories`);
+ if(x.err)errs.push('Open Food Facts: '+x.err);
+ else{const p=x.j.product;if(x.j.status==1&&p&&(p.product_name_es||p.product_name))return{d:{name:p.product_name_es||p.product_name,brand:(p.brands||'').split(',')[0].trim(),notes:p.quantity||'',category:(p.categories||'').split(',')[0].trim()},src:'Open Food Facts'}}
+ // 2) Medicamentos españoles (CIMA, AEMPS): el código nacional va dentro del EAN que empieza por 847
+ if(String(code).startsWith('847')){const c=await getJ(`https://cima.aemps.es/cima/rest/medicamentos?cn=${code.slice(3,9)}`);
+  if(c.err)errs.push('CIMA: '+c.err);
+  else{const r=(c.j.resultados||[])[0];if(r)return{d:{name:r.nombre,brand:r.labtitular||'',category:'Medicamentos',notes:r.pactivos||''},src:'CIMA (AEMPS)'}}}
+ // 3) Productos generales: ropa, herramientas, electrónica (UPCitemdb)
+ const u=await getJ(`https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`);
+ if(u.err)errs.push('UPCitemdb: '+u.err);
+ else{const it=(u.j.items||[])[0];if(it)return{d:{name:it.title,brand:it.brand||'',category:it.category||'',notes:it.description||'',img:(it.images||[])[0]},src:'UPCitemdb'}}
+ return{d:null,errs}}
+const getCfg=async()=>{try{return JSON.parse(await getP('_cfg')||'{}')}catch(e){return{}}};
+async function aiDraft(blob){const c=await getCfg();if(!c.key)throw new Error('falta la clave API (⚙️ en Escanear)');const b=await shrink(blob),b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(',')[1]);f.readAsDataURL(b)});
+ const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:c.model||'claude-haiku-5-5',max_tokens:500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'Identifica el artículo de la foto para un inventario doméstico. Responde SOLO con un JSON, sin texto extra, con estas claves (cadena vacía si no se ve): name (nombre corto en español), brand, model, category, code (código de barras si se lee, solo dígitos), exp (caducidad AAAA-MM-DD si se ve), notes (descripción breve: color, material, tamaño, formato).'}]}]})});
+ const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);return JSON.parse(j.content.map(x=>x.text||'').join('').match(/\{[\s\S]*\}/)[0])}
+async function completePend(){if(!navigator.onLine)return;let n=0;for(const i of items.filter(x=>x.pend&&!x.del&&x.code)){const d=(await lookup(i.code)).d;if(!d)continue;if(d.name)i.name=d.name;if(d.brand)i.tags=[...new Set([...tl(i.tags),d.brand])].join(', ');for(const f of['model','category','notes'])if(!i[f]&&d[f])i[f]=d[f];i.pend=0;await putI(touch(i));n++}if(n){render();flash(n+' artículo(s) completados desde internet')}}
+async function handleCode(code){const m=$('#s-m');if(!code){m.textContent='Escribe un código.';return}
+ if(scanFor==='code'){scanFor=null;sd.close();$('#code').value=code;const rr=await lookup(code);const dd=rr.d||{};if(dd.brand){const t=$('#tags');t.value=[...new Set([...tl(t.value),dd.brand])].join(', ')}for(const k of ['name','notes','category']){if(dd[k]&&!$('#'+(k=='name'?'name':k)).value)$('#'+k).value=dd[k]}$('#aim').textContent=rr.d?`Datos encontrados en ${rr.src}: revisa y guarda`:'Código leído. No está en las bases de datos: rellena el resto a mano';return}
+ const ex=items.find(i=>!i.del&&invOf(i)==inv&&i.code==code);if(ex){sd.close();edit(ex);flash('Ya lo tenías: ajusta la cantidad si hace falta');return}
+ m.textContent='Buscando '+code+'…';const r=await lookup(code);const d=r.d;
+ if(!d&&!navigator.onLine){const it={id:nextId(),inv,qty:1,code,name:'Código '+code,pend:1,cre:Date.now()};items.push(it);await putI(touch(it));sd.close();render();return flash('Sin conexión: guardado el código '+code+'. Se completará al volver internet')}
+ let pf=null;if(d&&d.img){try{const ir=await fetch(d.img);const bl=await ir.blob();if(bl.size)pf=bl}catch(e){}}
+ const{img,...dd}=d||{};sd.close();edit({id:null,inv,qty:1,code,...dd,_pf:pf});
+ $('#aim').textContent=d?`Datos encontrados en ${r.src}: revisa y guarda`:'No encontrado. '+(r.errs.length?r.errs.join(' · ')+'. ':'Ninguna base lo tiene. ')+'Rellénalo a mano o usa ✨ con una foto de la caja'}
+// ---- Gestor de ubicaciones
+let undo=null;
+function lmOpen(){const mine=items.filter(i=>!i.del&&invOf(i)==inv&&i.location),c={};mine.forEach(i=>paths(i.location).forEach(p=>c[p]=(c[p]||0)+1));
+ const ls=Object.keys(c).sort((a,b)=>a.localeCompare(b,'es'));$('#ld-t').innerHTML=ls.map(l=>`<div class="lr"><span style="padding-left:${(l.split(SEP).length-1)*14}px">${h(l.split(SEP).pop())} <small>(${c[l]})</small></span><span>→</span><input data-o="${h(l)}" value="${h(l)}"></div>`).join('')||'<p>No hay ubicaciones.</p>';$('#ld-u').hidden=!undo;if(!$('#ld').open)$('#ld').showModal()}
+// ---- Interfaz
+const io=new IntersectionObserver(es=>es.forEach(async e=>{if(!e.isIntersecting)return;io.unobserve(e.target);const b=await getP(pk0(e.target._i));if(b){e.target.style.backgroundImage=`url(${URL.createObjectURL(b)})`;e.target.textContent=''}}),{rootMargin:'300px'});
+const hue=s=>{let n=0;for(const c of s||'')n=(n*31+c.charCodeAt(0))%360;return n};
+const chip=l=>l?`<span class="ch" style="background:hsl(${hue(l)} 75% 88%);color:hsl(${hue(l)} 55% 22%)">${h(l)}</span>`:'';
+const days=i=>i.exp?Math.round((new Date(i.exp)-new Date().setHours(0,0,0,0))/864e5):null;
+const badge=i=>{const d=days(i),r=rep(i)?'<span class="b o">🛒 Reponer</span> ':'';return r+(d==null||isNaN(d)?'':d<0?'<span class="b r">Caducado</span>':d<=30?`<span class="b o">${d} d</span>`:`<span class="b g">${h(i.exp)}</span>`)};
+const rep=i=>i.min!==''&&i.min!=null&&+i.min>0&&+i.qty<=+i.min;
+const qtyT=i=>i.qty&&(i.qty!=1||i.unit)?`${i.qty} ${h(i.unit||'')}`:'';
+const p2=n=>String(n).padStart(2,'0'),msISO=ms=>{if(!ms)return '';const d=new Date(ms);return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
+const dfmt=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||'');return m?`${m[3]}/${m[2]}/${m[1]}`:(s||'')};
+const money=p=>{const n=parseFloat(p);return p===''||p==null||!isFinite(n)?'':n.toFixed(2).replace('.',',')+' €'};
+const isRet=i=>i.out===undefined?!!(i.ret||i.retWhy):!!i.out;
+const vms=m=>m>1.4e12&&m<4e12?m:0,creMs=i=>vms(i.cre||(typeof i.id=='string'&&/^[0-9a-z]{12}$/.test(i.id)&&isNaN(+i.id)?parseInt(i.id.slice(0,8),36):0));
+window.EXPG={};
+const SOL={az:'Nombre',location:'Ubicación',category:'Categoría',brand:'Marca',qty:'Cantidad',cre:'Fecha de alta',upd:'Última modificación',date:'Fecha de compra',price:'Precio',exp:'Caducidad'},
+ DFO=[['date','Compra'],['cre','Alta'],['upd','Modificación'],['ret','Retirada'],['exp','Caducidad']],
+ NAT={az:1,location:1,category:1,brand:1,tags:1,qty:1,exp:1,ret:-1,cre:-1,upd:-1,date:-1,price:-1},
+ SV={qty:i=>+i.qty||0,ret:i=>i.ret||null,cre:i=>creMs(i)||(+i.id||0),upd:i=>i.upd||0,date:i=>i.date||null,price:i=>{const n=parseFloat(i.price);return isFinite(n)&&n>0?n:null},exp:i=>EXPG[norm(i.name)+'|'+norm(i.code||'')]||i.exp||null},
+ DG={date:i=>i.date||'',cre:i=>msISO(creMs(i)),upd:i=>msISO(i.upd),ret:i=>i.ret||'',exp:i=>i.exp||''},
+ MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+let srt={casa:{k:'az',d:0},des:{k:'exp',d:0},bot:{k:'exp',d:0}},BUILT='',DL={};
+const saveUI=()=>putP('_ui',JSON.stringify({view,srt})).catch(()=>{});
+const TXK={az:1,location:1,category:1,brand:1,tags:1};
+const dirLabel=s=>{const up=NAT[s.k]*(s.d?-1:1)>0;return TXK[s.k]?(up?'A → Z':'Z → A'):s.k=='exp'?(up?'Más próxima primero':'Más lejana primero'):s.k=='price'?(up?'Más barato primero':'Más caro primero'):s.k=='qty'?(up?'Menos primero':'Más primero'):(up?'Más antiguo primero':'Más reciente primero')};
+const TX={az:i=>i.name,location:i=>i.location,category:i=>i.category,brand:i=>i.brand,tags:i=>i.tags};
+function sorter(){const{k,d}=srt[inv],sg=NAT[k]*(d?-1:1);
+ return(a,b)=>{if(TX[k]){const c=String(TX[k](a)||'').localeCompare(String(TX[k](b)||''),'es',{numeric:true});return (c||a.name.localeCompare(b.name,'es'))*sg}
+  const x=SV[k]?SV[k](a):null,y=SV[k]?SV[k](b):null;
+  if(x==null&&y==null)return a.name.localeCompare(b.name,'es');if(x==null)return 1;if(y==null)return -1;
+  return x!=y?(x<y?-1:1)*sg:a.name.localeCompare(b.name,'es')}}
+// fecha parcial -> límite ISO comparable ("2022" -> 2022-01-01 / 2022-12-31; "03/2024"; "15/03/2024")
+const parseD=(s,end)=>{s=String(s||'').trim();if(!s)return '';let m,y,mo,d;
+ if(m=/^(\d{4})$/.exec(s))return end?`${m[1]}-12-31`:`${m[1]}-01-01`;
+ if(m=/^(\d{1,2})[\/.\-](\d{4})$/.exec(s)){mo=+m[1];y=+m[2]}
+ else if(m=/^(\d{4})[\/.\-](\d{1,2})$/.exec(s)){y=+m[1];mo=+m[2]}
+ else if(m=/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(s)){d=+m[1];mo=+m[2];y=+m[3]}
+ else if(m=/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/.exec(s)){y=+m[1];mo=+m[2];d=+m[3]}
+ else return '';
+ if(mo<1||mo>12)return '';if(d==null)d=end?new Date(y,mo,0).getDate():1;if(d<1||d>31)return '';return `${String(y).padStart(4,'0')}-${p2(mo)}-${p2(d)}`};
+// búsqueda: "2021-2023" = rango de años de compra; "enero 2023" = mes/año; lo demás, texto
+function qParse(raw){let s=raw.trim();const r=/^(\d{4})\s*(?:-|–|a|al|hasta)\s*(\d{4})$/i.exec(s);if(r)return{range:[r[1]+'-01-01',r[2]+'-12-31'].sort()};
+ const m=/^([a-záéíóú]{3,})\.?\s+(?:de\s+)?(\d{4})$/i.exec(s);if(m){const k=MES.indexOf(norm(m[1]).slice(0,3));if(k>=0)s=p2(k+1)+' '+m[2]}
+ return{q:norm(s)}}
+const SW=new Set(['el','la','los','las','de','del','en','y','o','con','un','una','al','para','por']);
+const hay=i=>norm([i.name,i.brand,i.model,i.category,i.price,i.tags,i.code,i.retWhy,i.date,dfmt(i.date),i.exp,dfmt(i.exp),i.ret,dfmt(i.ret)].join(' '));
+function render(){const pan=inv!='casa';
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.i==inv));updBar();
+ document.querySelectorAll('.pan').forEach(e=>e.hidden=!pan);
+ if(BUILT!=inv){BUILT=inv;$('#so').innerHTML=Object.keys(SOL).map(k=>`<option value="${k}">${SOL[k]}</option>`).join('');
+  const dv=$('#df').value,ds=DFO.filter(x=>x[0]!='exp'||pan);$('#df').innerHTML=ds.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');$('#df').value=ds.some(x=>x[0]==dv)?dv:'date'}
+ const sv=srt[inv];$('#so').value=sv.k;$('#sdir').textContent='↕ '+dirLabel(sv);
+ const ALL=true,mine=items.filter(i=>!i.del&&(ALL||invOf(i)==inv)),act=mine.filter(i=>!isRet(i)),
+  locs=[...new Set(mine.flatMap(i=>paths(i.location)))].sort((a,b)=>a.localeCompare(b,'es')),
+  cats=[...new Set([...mine.map(i=>i.category).filter(Boolean),...XC])].sort((a,b)=>a.localeCompare(b,'es'));
+ const d1=locs.map(x=>`<option value="${h(x)}">`).join(''),d2=cats.map(x=>`<option value="${h(x)}">`).join('');
+ if(DL.l!==d1){DL.l=d1;$('#locs').innerHTML=d1}if(DL.c!==d2){DL.c=d2;$('#cats').innerHTML=d2}
+ fillSel('#loc',locs.map(p=>[p,'\u00a0\u00a0'.repeat(p.split(SEP).length-1)+p.split(SEP).pop()]),'— Sin ubicación —');
+ fillSel('#cat',cats.map(c=>[c,c]),'— Sin categoría —');
+ fillSel('#brf',[...new Set(mine.map(i=>(i.brand||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es')).map(b=>[b,b]),'— Sin marca —');
+ fillSel('#tgf',[...new Set(mine.flatMap(i=>tl(i.tags)))].sort((a,b)=>a.localeCompare(b,'es')).map(t=>[t,t]),'— Sin etiquetas —');
+ const rp=$('#rp').checked,pf=$('#pf').value,es=$('#es').value,df=$('#df').value,lv=$('#loc').value,cv=$('#cat').value,bv=$('#brf').value,tv=$('#tgf').value,
+  lo=parseD($('#d1').value,0),hi=parseD($('#d2').value,1),P=qParse($('#q').value);
+ $('#d1').classList.toggle('bad',!!$('#d1').value.trim()&&!lo);$('#d2').classList.toggle('bad',!!$('#d2').value.trim()&&!hi);
+ const nf=[lv,cv,bv,tv,pf,es!='all'?es:'',lo||hi,rp].filter(Boolean).length;$('#fn').textContent=nf?` (${nf})`:'';
+ EXPG={};mine.forEach(x=>{if(!x.exp||x.del)return;const k=norm(x.name)+'|'+norm(x.code||'');if(!EXPG[k]||x.exp<EXPG[k])EXPG[k]=x.exp});
+ PKG={};mine.forEach(x=>{if(!x.del&&pks(x).length&&!PKG[gkey(x)])PKG[gkey(x)]=pks(x)[0]});
+ shown=mine.filter(i=>{const r=isRet(i);if(es==''&&r)return false;if(es=='ret'&&!r)return false;if(QS=='exp30'&&!(exp30(i)&&!(i.qty!==''&&+i.qty===0)))return false;if(QS=='expired'&&!(i.exp&&days(i)<0&&!(i.qty!==''&&+i.qty===0)))return false;if(QS=='loc'&&(i.location||isRet(i)))return false;if(QS=='zero'&&!(i.qty!==''&&+i.qty===0))return false;
+  if(lv=='__none'?i.location:(lv&&!inLoc(i.location,lv)))return false;
+  if(cv=='__none'?i.category:(cv&&i.category!=cv))return false;
+  if(bv=='__none'?(i.brand||'').trim():(bv&&norm(i.brand)!=norm(bv)))return false;
+  if(tv=='__none'?tl(i.tags).length:(tv&&!tl(i.tags).map(norm).includes(norm(tv))))return false;
+  if(pf=='sin'&&phOf(i))return false;if(pf=='con'&&!phOf(i))return false;if(rp&&!rep(i))return false;
+  if(lo||hi){const v=DG[df](i);if(!v||(lo&&v<lo)||(hi&&v>hi))return false}
+  if(P.range){const v=i.date||'';if(!v||v<P.range[0]||v>P.range[1])return false}else if(P.q&&!P.q.split(' ').filter(t=>t&&!SW.has(t)).every(t=>hay(i).includes(t)))return false;
+  return true}).sort(sorter());
+ const gk=x=>norm(x.name)+'|'+norm(x.code||'');const grp={};mine.forEach(x=>{const k=gk(x);(grp[k]=grp[k]||[]).push(x)});const repG={};shown.forEach(x=>{const k=gk(x);if(!repG[k]||(!phOf(repG[k])&&phOf(x)))repG[k]=x});if(!lv&&!cv&&!bv&&!tv)shown=shown.filter(x=>repG[gk(x)]===x);shown.forEach(x=>{x._sib=grp[gk(x)].filter(o=>o.id!=x.id).map(o=>o.location||'Sin ubicación')});
+ renderSum(mine,act);locCount();const g=$('#grid'),ls=$('#list');g.hidden=view!='grid';ls.hidden=view!='list';g.innerHTML='';ls.innerHTML='';$('#vw').textContent=view=='grid'?'☰ Lista':'▦ Tarjetas';
+ const cb=i=>`<input type="checkbox" class="ckb"${S.has(i.id)?' checked':''}>`;
+ if(view=='grid')for(const i of shown){const c=document.createElement('div'),meta=[dfmt(i.date),money(i.price)].filter(Boolean).join(' · ');c.className='card'+(S.has(i.id)?' sel':'')+(isRet(i)?' rt':'');
+  c.innerHTML=(selOn?`<span class="ck">${cb(i)}</span>`:'')+`<div class="im">${EMO[invOf(i)]}</div><div class="t"><b>${h(i.name)}</b>${invOf(i)=='bot'&&i.notes?`<div class="m">${h(i.notes)}</div>`:''}${i.pend?'<span class="b o">Sin completar</span>':''}${i.qty!==''&&+i.qty===0?'<span class="b r">Agotado</span>':''}${rep(i)?'<span class="b o">A reponer</span>':''}${chip(i.location)}${(i._sib||[]).map(x=>chip(x)).join('')}${pan?badge(i)+' '+qtyT(i):''}${isRet(i)?'<span class="b x">Retirado</span>':''}${meta?`<div class="m">${h(meta)}</div>`:''}</div>`;
+  c.onclick=()=>pick(i,c);g.append(c);if(phOf(i)){const im=c.querySelector('.im');im._i=i;io.observe(im)}}
+ else{const k=sv.k,up=NAT[k]*(sv.d?-1:1)>0,ar=c=>c.k&&c.k==k?(up?' ▲':' ▼'):'',CL=[{t:'Nombre',k:'az',f:i=>h(i.name)+(invOf(i)=='bot'&&i.notes?` `:'')+(i.pend?' <span class="b o">Sin completar</span>':'')+(isRet(i)?' <span class="b x">Retirado</span>':'')},...(true?[{t:'Descripción',c:'ds',f:i=>h(i.notes)}]:[]),{t:'Ubicación',k:'location',f:i=>chip(i.location)+(i._sib||[]).map(x=>chip(x)).join('')},{t:'Categoría',k:'category',c:'hm',f:i=>h(i.category)},
+   ...(pan?[{t:'Cant.',k:'qty',f:qtyT},{t:'Caducidad',k:'exp',f:badge}]:[]),
+   {t:'Fecha compra',k:'date',c:'hm n',f:i=>h(dfmt(i.date))},{t:'Precio',k:'price',c:'n',f:i=>money(i.price)},
+   {t:'Alta',k:'cre',c:'hm n',f:i=>h(dfmt(msISO(creMs(i))))},{t:'Modificado',k:'upd',c:'hm n',f:i=>h(dfmt(msISO(i.upd)))},
+   ...(es?[{t:'Retirada · motivo',k:'ret',f:i=>h([dfmt(i.ret),i.retWhy].filter(Boolean).join(' · ')||(isRet(i)?'Retirado':''))}]:[]),
+   ...(!pan?[{t:'Etiquetas',k:'tags',c:'hm',f:i=>h(i.tags)}]:[])];
+  const t=document.createElement('table');t.innerHTML=`<tr>${selOn?'<th class="ckc"><input type="checkbox" id="ckall"></th>':''}<th></th>${CL.map(c=>`<th class="${c.c||''}"${c.k?` data-k="${c.k}"`:''} style="cursor:pointer;white-space:nowrap">${c.t}${ar(c)}</th>`).join('')}</tr>`;
+  t.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const q=th.dataset.k;if(srt[inv].k==q)srt[inv].d^=1;else srt[inv]={k:q,d:0};saveUI();render()});
+  for(const i of shown){const r=t.insertRow();r.className='r'+(S.has(i.id)?' sel':'')+(isRet(i)?' rt':'');
+   r.innerHTML=(selOn?`<td class="ckc">${cb(i)}</td>`:'')+`<td><div class="th">${phOf(i)?'':EMO[invOf(i)]}</div></td>`+CL.map(c=>`<td class="${c.c||''}">${c.f(i)}</td>`).join('');
+   r.onclick=()=>pick(i,r);if(phOf(i)){const th=r.querySelector('.th');th._i=i;io.observe(th)}}
+  const ca=t.querySelector('#ckall');if(ca){ca.checked=!!shown.length&&shown.every(i=>S.has(i.id));ca.onclick=e=>{e.stopPropagation();shown.forEach(i=>ca.checked?S.add(i.id):S.delete(i.id));render()}}
+  ls.append(t)}
+ if(!$('#st').dataset.k){const f=mine.filter(i=>phOf(i)).length,nr=mine.length-act.length,tot=shown.filter(i=>!isRet(i)).reduce((s,i)=>s+(+i.price||0),0),rr=pan?act.filter(rep).length:0,e=pan?act.filter(i=>i.exp&&days(i)<0).length:0,s=pan?act.filter(i=>i.exp&&days(i)>=0&&days(i)<=30).length:0;
+  st(lv?`${shown.length} de ${mine.length} artículos · ${f} con foto`+(nr?` · ${nr} retirados`:'')+(tot?` · 💶 ${money(tot)}`:'')+(pan?` · 🛒 ${rr} a reponer · ⚠ ${e} caducados · ${s} caducan en 30 días`:''):'')}}
+let PL=[],PG=[],QS=null;
+const exp30=i=>{if(!i.exp)return false;const d=days(i);return d!=null&&d>=0&&d<=30};
+function renderSum(mine,act){const pan=inv!='casa',sin=act.filter(i=>!phOf(i)).length;
+ const on=(q)=>(q=='exp'&&QS=='exp30')||(q=='loc'&&QS=='loc')||(q=='sin'&&$('#pf').value=='sin')||(q=='rep'&&$('#rp').checked)?' data-on="1"':'';
+ const B=(q,n,l,c)=>`<button class="rs-b" data-q="${q}"${on(q)}><b style="color:${c}">${n}</b><small>${l}</small></button>`;
+ $('#rs').innerHTML=B('tot',act.length,'activos','var(--text-primary)')+B('ret',mine.filter(isRet).length,'retirados','var(--text-primary)')+B('con',act.filter(i=>phOf(i)).length,'con foto','var(--text-primary)')+B('sin',sin,'sin foto','var(--text-primary)')+B('loc',act.filter(i=>!i.location).length,'sin ubicación','var(--text-primary)')+B('exp',act.filter(i=>exp30(i)&&!(i.qty!==''&&+i.qty===0)).length,'próximos a caducar','#854F0B')+B('expired',act.filter(i=>i.exp&&days(i)<0&&!(i.qty!==''&&+i.qty===0)).length,'caducados','#A32D2D')+B('rep',act.filter(rep).length,'a reponer','#854F0B')+B('zero',act.filter(i=>i.qty!==''&&+i.qty===0).length,'agotados','#A32D2D');
+ $('#rs').querySelectorAll('button').forEach(b=>b.onclick=()=>{const q=b.dataset.q;QS=null;$('#pf').value='';$('#rp').checked=false;
+  if(q=='tot'){$('#fc').click();return}if(q=='sin')$('#pf').value='sin';if(q=='con')$('#pf').value='con';if(q=='zero')QS='zero';if(q=='expired')QS='expired';if(q=='ret')$('#es').value='ret';if(q=='exp')QS='exp30';if(q=='loc')QS='loc';if(q=='rep')$('#rp').checked=true;render()})}
+function fillSel(sel,pairs,none){const el=$(sel),sig=JSON.stringify(pairs)+none;if(el._sig===sig)return;el._sig=sig;const v=el.value;
+ el.innerHTML=`<option value="">Todas</option><option value="__none">${h(none)}</option>`+pairs.map(([v2,l])=>`<option value="${h(v2)}">${h(l)}</option>`).join('');
+ el.value=[...el.options].some(o=>o.value==v)?v:''}
+let multiQty=null;
+async function edit(i){cur=i||{id:null,qty:1};if(!cur.id)cur.id=nextId();for(const f of FIELDS)$('#'+f).value=cur[f]??'';$('#out').checked=cur.out===undefined?!!(cur.ret||cur.retWhy):!!cur.out;$('#ph').value='';$('#del').hidden=!(i&&i.id);$('#dup').hidden=!(i&&i.id);$('#aim').textContent='';
+ $('#notesL').textContent='Descripción';
+ PL=pks(cur).map(k=>({k,isNew:false}));PG=[];if(cur._pf){PL.push({k:cur.id+'_'+(norm($('#name').value).slice(0,40).replace(/ /g,'_')||'foto')+'_'+uid(),b:cur._pf,isNew:true});delete cur._pf}
+ const gk0=x=>norm(x.name)+'|'+norm(x.code||'');const sb=cur.id?items.filter(x=>!x.del&&gk0(x)==gk0(cur)):[];$('#sibbox').hidden=sb.length<2;const tot=sb.reduce((t,x)=>t+(+x.qty||0),0);$('#sibl').textContent='Este artículo · total: '+tot+' uds';$('#lote').hidden=!(i&&i.id);const mL=new Set(sb.map(x=>x.location||'')).size>1;$('#qtyl').textContent=mL?'Cantidad total (todos los sitios)':'Cantidad';multiQty=mL?(+cur.qty||0):null;if(mL){$('#qty').value=tot;$('#qty').readOnly=true}else $('#qty').readOnly=false;$('#sibsel').innerHTML=sb.map(x=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:5px 8px 5px 12px;border-radius:14px;background:${x.id==cur.id?'#c9bcff':'#e8e2ff'};color:#2b2340;font-size:14px">${h(x.location||'Sin ubicación')} · <input type="number" min="0" inputmode="numeric" class="sq" data-q="${h(x.id)}" value="${h(x.qty??1)}" style="width:76px;height:46px;font-size:18px;text-align:center;border-radius:10px;border:1px solid #9a8fd0;padding:4px">${x.exp?' · caduca '+dfmt(x.exp):' · sin caducidad'} <button type="button" data-open="${h(x.id)}" title="Abrir este registro" style="border:0;background:transparent;cursor:pointer">✏</button><button type="button" data-del="${h(x.id)}" title="Quitar este registro" style="border:0;background:transparent;cursor:pointer">✖</button></span>`).join('');
+ await drawPv();$('#dlg').showModal()}
+async function drawPv(){const box=$('#pvs');box.innerHTML='';
+ for(const[idx,p]of PL.entries()){const b=p.isNew?p.b:await getP(p.k);if(!b)continue;const d=document.createElement('div');d.className='pvi';
+  d.innerHTML=`<img src="${URL.createObjectURL(b)}"><small>${idx?'':'★ Portada'}</small><div class="pvb">${idx?`<button type="button" data-c="${idx}">★ portada</button>`:''}<button type="button" data-x="${idx}">✖ quitar</button></div>`;box.append(d)}
+ box.querySelectorAll('.pvi img').forEach(im=>im.onclick=()=>{$('#lbi').src=im.src;$('#lb').classList.add('on')});
+ box.querySelectorAll('[data-c]').forEach(x=>x.onclick=()=>{const[p]=PL.splice(+x.dataset.c,1);PL.unshift(p);drawPv()});
+ box.querySelectorAll('[data-x]').forEach(x=>x.onclick=()=>{const[p]=PL.splice(+x.dataset.x,1);if(!p.isNew)PG.push(p.k);drawPv()});
+ $('#ph').disabled=PL.length>=3}
+$('#lb').onclick=()=>$('#lb').classList.remove('on');
+$('#dup').onclick=async()=>{const src=items.find(x=>x.id==cur.id);if(!src)return;
+ const copy={...src};for(const k of ['id','phs','ph','cre','upd','del','pend','ret','retWhy'])delete copy[k];
+ const bl=[];for(const k of pks(src)){const b=await getP(k);if(b)bl.push(b)}
+ await edit(copy);
+ for(const b of bl)PL.push({k:cur.id+'_'+(norm($('#name').value).slice(0,40).replace(/ /g,'_')||'foto')+'_'+uid(),b,isNew:true});
+ await drawPv();
+ $('#aim').textContent='Copia creada. Cambia lo que necesites (por ejemplo, la caducidad) y guarda';};
+const locSug=()=>{const parts=$('#location').value.split(/\s*[>>]\s*/),last=norm(parts.pop()),par=parts.filter(Boolean).join(SEP);const all=new Set();items.forEach(i=>{if(!i.del&&invOf(i)==inv&&i.location)paths(i.location).forEach(p=>all.add(p))});const m=[...all].filter(p=>{const pp=p.split(SEP),nm=pp.pop();return pp.join(SEP)==par&&(!last||norm(nm).includes(last))}).sort((a,b)=>a.localeCompare(b,'es'));$('#locsug').style.cssText='max-height:260px;overflow:auto;display:flex;flex-wrap:wrap;gap:4px';$('#locsug').innerHTML=m.map(l=>`<button type="button" class="sugb" data-l="${h(l)}">${h(l.split(SEP).pop())}</button>`).join('');$('#locsug').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#location').value=b.dataset.l+SEP;locSug();$('#location').focus()})};
+$('#location').oninput=locSug;$('#location').onfocus=locSug;
+$('#ph').onchange=async e=>{for(const f of [...e.target.files]){if(PL.length>=3){flash('Máximo 3 fotos por artículo');break}PL.push({k:cur.id+'_'+(norm($('#name').value).slice(0,40).replace(/ /g,'_')||'foto')+'_'+uid(),b:await shrink(f),isNew:true})}e.target.value='';drawPv()};
+$('#sibsel').onchange=async e=>{const q=e.target.closest('input.sq');if(!q)return;const x=items.find(y=>String(y.id)==String(q.dataset.q));if(!x)return;x.qty=+q.value||0;await putI(touch(x));if(x.id==cur.id){cur.qty=x.qty}const t2=items.filter(y=>!y.del&&gk0(y)==gk0(cur)).reduce((t,y)=>t+(+y.qty||0),0);$('#sibl').textContent='Este artículo · total: '+t2+' uds';$('#qty').value=t2;render()};
+$('#sibsel').onclick=async e=>{const o=e.target.closest('button');if(!o)return;const id=o.dataset.open??o.dataset.del;const x=items.find(y=>String(y.id)==String(id));if(!x)return;if(o.dataset.open!==undefined){if(x.id!=cur.id)edit(x);return}if(confirm('¿Quitar este registro del artículo? (el artículo no se borra)')){x.del=1;await putI(touch(x));$('#dlg').close();render();if(x.id==cur.id)return}};
+$('#lote').onclick=async()=>{const n={};for(const f of FIELDS)n[f]=normF(f,$('#'+f).value);n.qty=1;n.exp='';n.inv=cur.inv||inv;n.id=nextId();n.cre=Date.now();n.upd=Date.now();n.phs=[];n.ph=0;n.out=false;items.push(n);await putI(n);$('#dlg').close();render();edit(n)};
+$('#f').onsubmit=async(e)=>{for(const f of FIELDS)cur[f]=normF(f,$('#'+f).value);cur.out=$('#out').checked;if(multiQty!==null){cur.qty=multiQty;multiQty=null}const lim=new Date().getFullYear()+2,yr=v=>{const m=/^(\d{4})/.exec(v||'');return m?+m[1]:0};const malos=[['date','compra'],['exp','caducidad'],['ret','retirada']].filter(([f])=>$('#'+f).value&&(yr($('#'+f).value)<1900||yr($('#'+f).value)>lim));if(malos.length&&!confirm('Revisa la fecha de '+malos.map(([f,n])=>n+': '+dfmt($('#'+f).value)).join(', ')+' (año muy raro). ¿Guardar igual?')){e.preventDefault();return}cur.location=fixLoc(cur.location);cur.qty=cur.qty===''?1:+cur.qty;cur.min=cur.min===''?'':+cur.min;if(!items.includes(cur)){cur.inv=cur.inv||inv;cur.cre=cur.cre||Date.now();items.push(cur)}
+ if(cur.name&&!cur.name.startsWith('Código '))cur.pend=0;for(const p of PL)if(p.isNew)await putP(p.k,p.b.type=='image/jpeg'?p.b:await shrink(p.b));for(const k of PG)await delP(k);cur.phs=PL.map(p=>p.k);cur.ph=PL.length?1:0;delete cur._pf;await putI(touch(cur));render();if(isRet(cur)&&$('#es').value=='')flash('Artículo retirado: lo verás en Filtros → Estado → Retirados')};
+$('#rethoy').onclick=()=>{$('#ret').value=msISO(Date.now());$('#retWhy').focus()};
+$('#cx').onclick=()=>$('#dlg').close();
+$('#del').onclick=async()=>{if(confirm('¿Borrar este artículo?')){cur.del=1;cur.ph=0;for(const k of pks(cur))await delP(k);await putI(touch(cur));$('#dlg').close();render()}};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{inv=t.dataset.i;$('#loc').value='';$('#cat').value='';$('#brf').value='';$('#tgf').value='';render()});
+$('#mm').onclick=()=>{$('#masr').hidden=!$('#masr').hidden};
+$('#vw').onclick=()=>{view=view=='grid'?'list':'grid';saveUI();render()};
+$('#new').onclick=()=>edit();$('#imp').onclick=()=>$('#fi').click();$('#expb').onclick=()=>xd.showModal();
+$('#x1').onclick=()=>{xd.close();exportZip()};
+$('#x2').onclick=()=>{xd.close();const c=cols(shown);dl(xlsx(shown,c,invName()),`${invName().toLowerCase()}-${stampF()}.xlsx`)};
+$('#x3').onclick=()=>{xd.close();exportPdf()};
+$('#x4').onclick=()=>{xd.close();dl(new Blob([toCsv(shown,cols(shown))],{type:'text/csv'}),`${invName().toLowerCase()}-${stampF()}.csv`)};
+$('#fi').onchange=e=>{importFiles([...e.target.files]);e.target.value=''};
+['q','loc','cat','brf','tgf','rp','pf','es','df','d1','d2'].forEach(k=>$('#'+k).oninput=render);
+$('#pf').oninput=()=>{if($('#pf').value=='sin'&&view!='list'){view='list';saveUI()}render()};
+$('#so').oninput=()=>{srt[inv].k=$('#so').value;srt[inv].d=0;saveUI();render()};
+$('#sdir').onclick=()=>{srt[inv].d^=1;saveUI();render()};
+$('#ft').onclick=()=>{const f=$('#flt');f.classList.toggle('on');if(f.classList.contains('on'))0};
+$('#flt').insertAdjacentHTML('beforeend','<button id="fx" type="button" style="width:100%;min-height:44px">▲ Ocultar filtros</button>');$('#fx').onclick=()=>{$('#flt').classList.remove('on');$('#tools').scrollIntoView({block:'start'})};
+$('#fc').onclick=()=>{QS=null;['q','loc','cat','brf','tgf','d1','d2'].forEach(k=>$('#'+k).value='');$('#pf').value='';$('#es').value='all';$('#rp').checked=false;render()};
+$('#lm').onclick=lmOpen;$('#ld-t').oninput=e=>e.target.classList.toggle('ch2',e.target.value!=e.target.dataset.o);
+$('#ld-s').onclick=()=>{const ins=[...document.querySelectorAll('#ld-t input')],ls=ins.map(x=>x.dataset.o),N=ls.map(l=>' '+norm(l));
+ ins.forEach((x,i)=>{let b=null;ls.forEach((m,j)=>{const nm=' '+norm(m);if(i!=j&&N[i].endsWith(nm)&&N[i].length>nm.length&&(!b||norm(m).length<norm(b).length))b=m});x.value=b||ls[i];x.classList.toggle('ch2',x.value!=ls[i])})};
+$('#ld-a').onclick=async()=>{const mv=$('#ld-mv').checked,map={};document.querySelectorAll('#ld-t input').forEach(x=>{const v=x.value.trim();if(v!=x.dataset.o)map[x.dataset.o]=v});
+ const snap=[];let n=0;for(const i of items){if(i.del||invOf(i)!=inv||!i.location)continue;const old=i.location,to=remap(old,map);if(to==old)continue;snap.push({id:i.id,location:old,notes:i.notes});
+  let d='';if(mv&&to){const re=new RegExp('\\s*'+to.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$','i');if(re.test(old)&&norm(old)!=norm(to))d=old.replace(re,'').trim()}
+  i.location=to;if(d&&!(i.notes||'').includes(d))i.notes=d+(i.notes?' — '+i.notes:'');await putI(touch(i));n++}
+ if(n)undo=snap;lmOpen();render();flash(`${n} artículos reubicados`)};
+$('#ld-u').onclick=async()=>{for(const s of undo||[]){const i=items.find(x=>x.id==s.id);if(i){i.location=s.location;i.notes=s.notes;await putI(touch(i))}}undo=null;lmOpen();render();flash('Cambios deshechos')};
+$('#sc').onclick=async()=>{const c=await getCfg();$('#k').value=c.key||'';$('#mo').value=c.model||'claude-haiku-5-5';$('#s-m').textContent='';sd.showModal()};
+$('#ks').onclick=async()=>{await putP('_cfg',JSON.stringify({key:$('#k').value.trim(),model:$('#mo').value.trim()}));$('#s-m').textContent='Ajustes guardados.'};
+let scanFor=null;sd.addEventListener('close',()=>{scanFor=null});
+$('#scanf').onclick=()=>{$('#sc').click();scanFor='code'};
+$('#s1').onclick=()=>{$('#sf').dataset.m='bc';$('#sf').click()};$('#s2').onclick=()=>{$('#sf').dataset.m='ai';$('#sf').click()};$('#s3').onclick=()=>handleCode($('#s-c').value.replace(/\D/g,''));
+$('#sf').onchange=async e=>{const f=e.target.files[0],mode=e.target.dataset.m;e.target.value='';if(!f)return;const m=$('#s-m');
+ try{if(mode=='bc'){m.textContent='Leyendo el código…';const c=await readBarcode(f);if(c)return handleCode(c);m.textContent='No he podido leer el código. Acércate más, enfoca y prueba de nuevo, o escríbelo a mano.'}
+  else{m.textContent='Consultando a la IA…';const d=await aiDraft(f);sd.close();const dr={id:null,inv,qty:1,...d,_pf:await shrink(f)};if(d.code&&items.find(i=>!i.del&&invOf(i)==inv&&i.code==d.code))flash('Ojo: ya tienes un artículo con ese código');edit(dr)}}
+ catch(err){m.textContent='No se pudo: '+err.message}};
+$('#ai').onclick=async()=>{const m=$('#aim');try{const b=$('#ph').files[0]||(PL.find(p=>p.isNew)||{}).b||(PL[0]&&!PL[0].isNew?await getP(PL[0].k):null);if(!b){m.textContent='Añade primero una foto.';return}m.textContent='Consultando a la IA…';const d=await aiDraft(b);for(const f of FIELDS)if(d[f]&&!$('#'+f).value)$('#'+f).value=d[f];m.textContent='Listo: revisa los datos antes de guardar.'}catch(e){m.textContent='No se pudo: '+e.message}};
+function pick(i,el){if(!selOn)return edit(i);S.has(i.id)?S.delete(i.id):S.add(i.id);el.classList.toggle('sel',S.has(i.id));const c=el.querySelector('.ckb');if(c)c.checked=S.has(i.id);updBar()}
+function updBar(){$('#bar').style.display=selOn?'flex':'none';$('#bn').textContent=S.size+' seleccionados';$('#sl').textContent=selOn?'☑ Salir de selección':'☑ Seleccionar'}
+$('#sl').onclick=$('#bx').onclick=()=>{selOn=!selOn;S.clear();render()};
+$('#ba').onclick=()=>{shown.forEach(i=>S.add(i.id));render()};$('#bz').onclick=()=>{S.clear();render()};
+$('#be').onclick=()=>{if(!S.size)return flash('Selecciona algún artículo');$('#bd-n').textContent=S.size+' artículos seleccionados';['b-l','b-c','b-t','b-r','b-rd','b-rw','b-br','b-mo','b-ta','b-cl','b-uni','b-mi','b-pr','b-da','b-ex','b-no'].forEach(k=>$('#'+k).value='');$('#b-un').checked=false;$('#b-inv').value='';bd.showModal()};
+$('#b-ok').onclick=async()=>{const MV=$('#b-inv').value,L=fixLoc($('#b-l').value),C=$('#b-c').value.trim(),A=tl($('#b-t').value),Rm=tl($('#b-r').value).map(norm),RD=$('#b-rd').value,RW=$('#b-rw').value.trim(),UN=$('#b-un').checked;let n=0;
+ const BF=[['brand','b-br'],['model','b-mo'],['talla','b-ta'],['clase','b-cl'],['unit','b-uni'],['min','b-mi'],['price','b-pr'],['date','b-da'],['exp','b-ex'],['notes','b-no']].map(([k,id])=>[k,$('#'+id).value.trim()]).filter(x=>x[1]!=='');
+ for(const i of items){if(!S.has(i.id))continue;for(const [k,v] of BF)i[k]=v;if(MV)i.inv=MV;if(L)i.location=L;if(C)i.category=C;if(UN){i.ret='';i.retWhy=''}else{if(RD)i.ret=RD;if(RW)i.retWhy=RW}if(A.length||Rm.length)i.tags=[...new Set([...tl(i.tags),...A])].filter(t=>!Rm.includes(norm(t))).join(', ');await putI(touch(i));n++}
+ bd.close();S.clear();selOn=false;render();flash(n+' artículos actualizados')};
+$('#b-d').onclick=async()=>{if(!confirm('¿Borrar '+S.size+' artículos?'))return;for(const i of items)if(S.has(i.id)){i.del=1;i.ph=0;for(const k of pks(i))await delP(k);await putI(touch(i))}bd.close();S.clear();selOn=false;render()};
+function cmOpen(){const c={};items.filter(i=>!i.del&&invOf(i)==inv&&i.category).forEach(i=>c[i.category]=(c[i.category]||0)+1);XC.forEach(x=>c[x]=c[x]||0);const ls=Object.keys(c).sort((a,b)=>a.localeCompare(b,'es'));
+ $('#cd-t').innerHTML=ls.map(l=>`<div class="lr"><span>${h(l)} <small>(${c[l]})</small></span><span>→</span><input data-o="${h(l)}" value="${h(l)}"></div>`).join('')||'<p>No hay categorías.</p>';if(!cd.open)cd.showModal()}
+$('#cm').onclick=cmOpen;$('#cd-t').oninput=e=>e.target.classList.toggle('ch2',e.target.value!=e.target.dataset.o);
+$('#cd-add').onclick=async()=>{const v=$('#cd-n').value.trim();if(!v)return;if(!XC.includes(v))XC.push(v);await putP('_cats',JSON.stringify(XC));$('#cd-n').value='';cmOpen();render()};
+$('#cd-a').onclick=async()=>{const map={};document.querySelectorAll('#cd-t input').forEach(x=>{const v=x.value.trim();if(v!=x.dataset.o)map[x.dataset.o]=v});let n=0;
+ for(const i of items){if(i.del||invOf(i)!=inv||!i.category||!(i.category in map))continue;i.category=map[i.category];await putI(touch(i));n++}
+ XC=[...new Set(XC.map(x=>x in map?map[x]:x).filter(Boolean))];await putP('_cats',JSON.stringify(XC));cmOpen();render();flash(n+' artículos recategorizados')};
+(async()=>{db=await open();items=await tx('items','readonly',s=>s.getAll())||[];items.forEach(i=>{i.ph=pks(i).length?1:0});try{navigator.storage.persist()}catch(e){}try{XC=JSON.parse(await getP('_cats')||'[]')}catch(e){}try{const u=JSON.parse(await getP('_ui')||'{}');if(u.view)view=u.view;if(u.srt)srt={...srt,...u.srt}}catch(e){}if(innerWidth>=700)$('#flt').classList.add('on');render();completePend()})();addEventListener('online',completePend);
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+/* ===== SINCRONIZACIÓN EN LA NUBE (Supabase) ===== */
+const SB_URL='https://gxcmqormoqatckfosciy.supabase.co';
+const SB_KEY='sb_publishable_K_-8UL08zTxjGeSY7Rb5ZQ_1-YlRNb6';
+const SB=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SB_URL,SB_KEY):null;
+const BUCKET='fotos';
+const hexKey=s=>[...new TextEncoder().encode(s)].map(b=>b.toString(16).padStart(2,'0')).join('');
+const toRemote=(i,uid)=>({user_id:uid,id:String(i.id),inv:i.inv||'casa',name:i.name||'',location:i.location||'',brand:i.brand||'',model:i.model||'',talla:i.talla||'',clase:i.clase||'',category:i.category||'',code:i.code||'',qty:Number(i.qty)||0,min:(i.min===''||i.min==null)?null:Number(i.min),unit:i.unit||'',price:(i.price===''||i.price==null)?null:Number(i.price),date:i.date||null,exp:i.exp||null,ret:i.ret||null,ret_why:i.retWhy||'',tags:i.tags||'',notes:i.notes||'',out:!!i.out,pend:!!i.pend,deleted:!!i.del,created_ms:i.cre||0,updated_ms:i.upd||0});
+const fromRemote=r=>({id:r.id,inv:r.inv,name:r.name,location:r.location,brand:r.brand,model:r.model,talla:r.talla,clase:r.clase,category:r.category,code:r.code,qty:Number(r.qty),min:r.min==null?'':String(r.min),unit:r.unit,price:r.price==null?'':String(r.price),date:r.date||'',exp:r.exp||'',ret:r.ret||'',retWhy:r.ret_why||'',tags:r.tags,notes:r.notes,out:!!r.out,pend:r.pend?1:0,del:r.deleted?1:0,cre:r.created_ms,upd:r.updated_ms,phs:[],ph:0});
+async function leerTodo(tabla,orden,filtro){
+  let out=[],d=0;
+  for(;;){
+    let q=SB.from(tabla).select('*').order(orden,{ascending:true}).range(d,d+999);
+    if(filtro)q=filtro(q);
+    const {data,error}=await q;
+    if(error)throw error;
+    out=out.concat(data||[]);
+    if(!data||data.length<1000)break;
+    d+=1000;
+  }
+  return out;
+}
+const withT=(p,ms=30000)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('la conexión tarda demasiado; inténtalo de nuevo')),ms))]);
+let syncing=false,syncT0=0;
+const POOL=4,TMO=60000;
+async function pool(lista,n,fn){let i=0;const w=async()=>{while(i<lista.length){const t=lista[i++];try{await fn(t)}catch(e){console.error(e)}}};await Promise.all(Array.from({length:Math.min(n,lista.length)},w))}
+const tmo=(p,ms=TMO)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('tiempo agotado')),ms))]);
+async function sincronizar(auto){
+  try{
+  if(!SB){if(!auto)flash('No se pudo cargar el servicio de sincronización (revisa la conexión y recarga)');return}
+  if(!navigator.onLine){if(!auto)flash('Sin conexión: se sincronizará al volver internet');return}
+  if(!auto)st('Comprobando sesión…');
+  let session=null;
+  try{({data:{session}}=await withT(SB.auth.getSession(),15000))}catch(e){if(!auto){flash('No se pudo comprobar la sesión: '+(e.message||e));return}return}
+  if(!session){
+    if(auto)return;
+    flash('Entrando con GitHub… si no pasa nada, desactiva el bloqueo de ventanas emergentes o abre la app en Safari');
+    const {error}=await SB.auth.signInWithOAuth({provider:'github',options:{redirectTo:location.href.split('#')[0]}});
+    if(error)flash('No se pudo iniciar sesión: '+error.message);
+    return;
+  }
+  if(syncing&&Date.now()-syncT0<120000){if(!auto)flash('Ya se está sincronizando, espera…');return}
+  syncing=true;syncT0=Date.now();
+  if(!auto)st('Sincronizando…');
+  try{
+    const uid=session.user.id,t0=Date.now();
+    st('Sincronizando artículos…');
+    /* 1. Artículos: bajar los que la nube tiene más nuevos */
+    const rItems=await withT(leerTodo('items','id'));
+    const remotos=new Map((rItems||[]).map(r=>[String(r.id),Number(r.updated_ms)||0]));
+    const cambios=new Set();
+    for(const r of (rItems||[])){
+      const k=items.findIndex(x=>String(x.id)===String(r.id));
+      if(k>=0&&(items[k].upd||0)>=Number(r.updated_ms))continue;
+      const nuevo=fromRemote(r);
+      if(k>=0){nuevo.phs=items[k].phs||[];nuevo.ph=items[k].ph||0;items[k]=nuevo}else items.push(nuevo);
+      await putI(nuevo);cambios.add(String(r.id));
+    }
+    /* 2. Fotos: lista de la nube y descarga de las que faltan aquí */
+    st('Comprobando fotos…');
+    const rFotos=await withT(leerTodo('item_photos','photo_key'));
+    const fotosDe=new Map();
+    for(const f of (rFotos||[])){const a=fotosDe.get(f.item_id)||[];a.push(f);fotosDe.set(f.item_id,a)}
+    for(const a of fotosDe.values())a.sort((x,y)=>x.position-y.position);
+    const existentes=new Set((rFotos||[]).map(f=>f.photo_key));
+    const pendientes=new Set();
+    const bajar=[];
+    for(const it of items){
+      if(it.del)continue;
+      const id=String(it.id),rem=fotosDe.get(id)||[];
+      if(!rem.length)continue;
+      const antes=JSON.stringify([it.phs||[],it.ph||0]);
+      if(cambios.has(id))it.phs=rem.map(f=>f.photo_key);
+      else if((it.upd||0)<=(remotos.get(id)||0)){
+        const L=pks(it),extra=rem.map(f=>f.photo_key).filter(k=>!L.includes(k));
+        if(extra.length)it.phs=[...L,...extra];
+      }
+      it.ph=pks(it).length?1:0;
+      if(JSON.stringify([it.phs||[],it.ph||0])!==antes)await putI(it);
+      for(const f of rem)if(!(await getP(f.photo_key)))bajar.push(f);
+    }
+    let hechas=0;
+    await pool(bajar,POOL,async f=>{
+      const r=await tmo(SB.storage.from(BUCKET).download(f.storage_path)).catch(()=>null);
+      if(r&&!r.error&&r.data)await putP(f.photo_key,r.data);else pendientes.add(f.photo_key);
+      st(`Bajando fotos ${++hechas}/${bajar.length}`);
+    });
+    /* 3. Artículos: subir los que han cambiado aquí */
+    st('Subiendo artículos…');
+    const locales=items.filter(i=>{const ru=remotos.get(String(i.id));return(ru===undefined||(i.upd||0)>ru)&&!cambios.has(String(i.id))});
+    for(let k=0;k<locales.length;k+=200){
+      const {error}=await tmo(SB.from('items').upsert(locales.slice(k,k+200).map(i=>toRemote(i,uid)),{onConflict:'user_id,id'}));
+      if(error)throw error;
+    }
+    /* 4. Fotos: subir solo las que faltan en la nube, en paralelo */
+    const planes=[];
+    for(const it of items){
+      if(it.del)continue;
+      const id=String(it.id),L=pks(it),rem=fotosDe.get(id)||[],remK=rem.map(f=>f.photo_key);
+      if(JSON.stringify(remK)===JSON.stringify(L))continue;
+      const subir=[];
+      for(const k of L){if(!existentes.has(k)){const blob=await getP(k);if(blob)subir.push({k,blob,path:`${uid}/${hexKey(k)}.jpg`})}}
+      planes.push({id,L,rem,remK,subir});
+    }
+    const tareas=planes.flatMap(p=>p.subir.map(x=>({...x})));
+    let up=0;
+    if(tareas.length)st(`Subiendo fotos 0/${tareas.length}`);
+    await pool(tareas,POOL,async t=>{
+      const r=await tmo(SB.storage.from(BUCKET).upload(t.path,t.blob,{upsert:true,contentType:'image/jpeg'})).catch(e=>({error:e}));
+      if(r.error)pendientes.add(t.k);else existentes.add(t.k);
+      st(`Subiendo fotos ${++up}/${tareas.length}`);
+    });
+    /* 5. Filas de fotos en la nube: añadir las subidas y quitar solo las retiradas aquí */
+    st('Guardando lista de fotos…');
+    for(const p of planes){
+      const filas=[];
+      p.L.forEach((k,pos)=>{
+        const yaRemoto=p.remK.includes(k);
+        if(!existentes.has(k)&&!yaRemoto)return;
+        const sp=yaRemoto?p.rem.find(f=>f.photo_key===k).storage_path:`${uid}/${hexKey(k)}.jpg`;
+        filas.push({user_id:uid,photo_key:k,item_id:p.id,position:pos,storage_path:sp,created_ms:Date.now()});
+      });
+      const obsoletas=p.remK.filter(k=>!p.L.includes(k));
+      if(obsoletas.length){const {error}=await tmo(SB.from('item_photos').delete().eq('item_id',p.id).in('photo_key',obsoletas));if(error)throw error}
+      for(let k=0;k<filas.length;k+=200){const {error}=await tmo(SB.from('item_photos').upsert(filas.slice(k,k+200),{onConflict:'user_id,photo_key'}));if(error)throw error}
+    }
+    localStorage.setItem('inv_last_sync',String(t0));
+    render();
+    const n=items.filter(i=>!i.del).length,con=items.filter(i=>!i.del&&pks(i).length).length;
+    flash('Sincronizado: '+n+' artículos, '+con+' con foto'+(pendientes.size?' · '+pendientes.size+' fotos pendientes (vuelve a sincronizar)':''));
+  }catch(err){
+    console.error(err);
+    flash('Error al sincronizar: '+(err.message||err));
+  }finally{syncing=false}
+  }catch(e){flash('Error: '+(e.message||e));console.error(e)}
+}
+$('#sy').onclick=()=>sincronizar(false);
+async function subirYReemplazarNube(){
+ if(!SB)return flash('No se pudo cargar el servicio de sincronización');
+ if(!navigator.onLine)return flash('Sin conexión');
+ const {data:{session}}=await SB.auth.getSession();
+ if(!session){await SB.auth.signInWithOAuth({provider:'github',options:{redirectTo:location.href.split('#')[0]}});return}
+ if(syncing)return flash('Espera a que termine la sincronización');
+ const locales=items.filter(i=>!i.del);
+ if(!locales.length)return flash('Este dispositivo no tiene artículos: no se reemplaza la nube');
+ if(!confirm('¿Sustituir la nube por los '+locales.length+' artículos de este dispositivo?\n\nLo que esté en la nube y no esté aquí se borrará de la nube.'))return;
+ syncing=true;
+ try{
+  const uid=session.user.id;
+  st('Reemplazando la nube…');
+  const remotos=await withT(leerTodo('items','id'));
+  const locIds=new Set(locales.map(i=>String(i.id)));
+  const sobran=(remotos||[]).map(r=>String(r.id)).filter(x=>!locIds.has(x));
+  for(let k=0;k<locales.length;k+=200){const {error}=await tmo(SB.from('items').upsert(locales.slice(k,k+200).map(i=>toRemote(i,uid)),{onConflict:'user_id,id'}));if(error)throw error}
+  for(let k=0;k<sobran.length;k+=100){const ids=sobran.slice(k,k+100);
+   const {error:e1}=await SB.from('item_photos').delete().in('item_id',ids);if(e1)throw e1;
+   const {error:e2}=await tmo(SB.from('items').update({deleted:true,updated_ms:Date.now()}).eq('user_id',uid).in('id',ids));if(e2)throw e2}
+  syncing=false;
+  await sincronizar(false);
+  flash('Nube sustituida: '+locales.length+' artículos'+(sobran.length?' · '+sobran.length+' quitados de la nube':''));
+ }catch(err){console.error(err);flash('Error al sustituir la nube: '+(err.message||err))}
+ finally{syncing=false}
+}
+$('#syr').onclick=subirYReemplazarNube;
+addEventListener('online',()=>sincronizar(true));
+setTimeout(()=>sincronizar(true),2000);
+
+
+const gKey=g=>g.map(x=>String(x.id)).sort().join(',');
+const noDupSet=()=>{try{return new Set(JSON.parse(localStorage.getItem('inv_no_dup')||'[]'))}catch(e){return new Set()}};
+const HC=new Map();
+async function prepDup(){for(const i of items){if(i.del)continue;const k=pk0(i);if(!k||HC.has(k))continue;const b=await getP(k);if(!b){HC.set(k,'');continue}HC.set(k,[...new Uint8Array(await crypto.subtle.digest('SHA-256',await b.arrayBuffer()))].map(x=>x.toString(16).padStart(2,'0')).join(''))}}
+const ATR=[['negro','negra','negros','negras'],['blanco','blanca','blancos','blancas'],['rojo','roja','rojos','rojas'],['azul','azules'],['marron','marrones'],['verde','verdes'],['gris','grises'],['beige'],['amarillo','amarilla'],['rosa','rosas'],['naranja','naranjas'],['morado','morada'],['grande','grandes'],['mediana','mediano'],['pequeno','pequena','mini'],['dorado','dorada'],['plata','plateado']];
+const ATC=(a,b)=>{const g=s=>new Set(ATR.map((x,k)=>x.some(w=>s.has(w))?k:-1).filter(k=>k>=0));const A=g(a),B=g(b);return !!(A.size&&B.size&&![...A].some(k=>B.has(k)))};
+const TKN=i=>new Set(norm(i.name).split(' ').filter(t=>t.length>2));
+const dupGroups=()=>{const act=items.filter(i=>!i.del&&!isRet(i)),n=act.length,par=act.map((_,i)=>i),f=x=>par[x]===x?x:(par[x]=f(par[x]));
+  const tk=act.map(TKN),hs=act.map(i=>HC.get(pk0(i))||'');
+  for(let a=0;a<n;a++)for(let b=a+1;b<n;b++){const A=act[a],B=act[b];if(A.exp&&B.exp&&A.exp!==B.exp)continue;
+    const inter=[...tk[a]].filter(t=>tk[b].has(t)).length,uni=new Set([...tk[a],...tk[b]]).size||1;
+    if((hs[a]&&hs[a]===hs[b])||(inter>0&&inter/uni>=0.75&&!ATC(tk[a],tk[b])))par[f(a)]=f(b)}
+  const g=new Map();act.forEach((it,i)=>{const r=f(i);if(!g.has(r))g.set(r,[]);g.get(r).push(it)});
+  const ex=noDupSet();return [...g.values()].filter(x=>x.length>1).map(g=>g.sort((x,y)=>(pks(y).length?1:0)-(pks(x).length?1:0)||(x.cre||0)-(y.cre||0))).filter(g=>!ex.has(gKey(g)))};
+const DF=[['name','Nombre'],['location','Ubicación'],['brand','Marca'],['model','Modelo'],['talla','Talla'],['clase','Clase'],['category','Categoría'],['code','Código de barras'],['qty','Cantidad'],['min','Cant. mínima'],['unit','Unidad'],['price','Precio'],['date','Fecha compra'],['exp','Caducidad'],['ret','Fecha retirada'],['retWhy','Motivo retirada'],['tags','Etiquetas'],['notes','Descripción']];
+function openDup(){const G=dupGroups();const rowsOf=x=>DF.filter(([k])=>x[k]!==undefined&&x[k]!==null&&x[k]!=='').map(([k,l])=>`<tr><td style="color:var(--mut);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${l}</td><td style="padding:2px 0">${['date','exp','ret'].includes(k)?h(dfmt(x[k])):h(String(x[k]))}</td></tr>`).join('');
+$('#dup-l').innerHTML=G.length?G.map(g=>`<div style="border:1px solid var(--bd);border-radius:10px;padding:8px;margin:10px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${h(g[0].name)}</b><button type="button" class="nodup" data-g="${h(gKey(g))}" style="font-size:12px">No son duplicados</button></div>${g.map((x,xi)=>`<div style="display:flex;gap:10px;margin:8px 0;padding-top:8px;border-top:1px solid var(--bd)"><label style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px"><input type="checkbox" class="dd" value="${h(x.id)}" style="width:auto"><span style="font-size:12px">Borrar</span></label><div style="width:72px;flex:0 0 72px;height:72px;border-radius:8px;background:var(--bd);display:flex;align-items:center;justify-content:center;overflow:hidden">${phOf(x)?`<img data-pk="${h(pk0(x))}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:24px">📦</span>'}</div><table style="font-size:13px;border-collapse:collapse;flex:1">${rowsOf(x)}<tr><td style="color:var(--mut);padding:2px 8px 2px 0">Creado</td><td>${x.cre?new Date(x.cre).toLocaleString('es-ES'):'—'}</td></tr></table></div>`).join('')}</div>`).join(''):'<p>No hay duplicados.</p>';
+$('#dupd').showModal();$('#dup-l').querySelectorAll('button.nodup').forEach(btn=>btn.onclick=()=>{const ex=noDupSet();ex.add(btn.dataset.g);localStorage.setItem('inv_no_dup',JSON.stringify([...ex]));prepDup().then(openDup)});$('#dup-l').querySelectorAll('img[data-pk]').forEach(async im=>{const b=await getP(im.dataset.pk);if(b)im.src=URL.createObjectURL(b)})}
+$('#dupb').onclick=()=>prepDup().then(openDup);
+$('#dup-go').onclick=async()=>{const marcados=new Set([...$('#dup-l').querySelectorAll('input.dd:checked')].map(e=>e.value));if(!marcados.size)return flash('No has marcado ninguna ficha');const G=dupGroups();if(G.some(g=>g.every(x=>marcados.has(String(x.id)))))return flash('Deja al menos una ficha sin marcar en cada grupo');if(!confirm('Se van a borrar '+marcados.size+' fichas (las marcadas con la casilla). No se puede deshacer. ¿Continuar?'))return;let n=0;for(const x of items){if(x.del||!marcados.has(String(x.id)))continue;const keys=pks(x);x.del=1;await putI(touch(x));n++;for(const k of keys){if(!items.some(o=>!o.del&&o!==x&&pks(o).includes(k)))await delP(k)}}$('#dupd').close();render();flash(n+' fichas borradas')};
+
+/* contador por ubicación, visible arriba, y desplegable de ubicaciones al escribir */
+const bn=document.createElement('div');
+bn.id='locbn';bn.hidden=true;bn.style.cssText='font-size:18px;font-weight:700;padding:10px 14px;color:#fff;background:#7c4dff;border-radius:12px;margin:8px 12px';
+$('#list').insertAdjacentElement('beforebegin',bn);
+const lp=document.createElement('div');
+lp.id='locpick';lp.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-height:160px;overflow:auto';
+
+function locCount(){const L=($('#loc').value||'').trim(),lab=$('#loc').parentElement.querySelector('label');
+  $('#st').classList.toggle('big',!!L);
+  if(!L){if(lab)lab.textContent='📍 Ubicación (escribe para buscar)';bn.hidden=true;return}
+  const n=items.filter(i=>!i.del&&(inLoc(i.location,L)||norm(i.location).includes(norm(L)))).length;
+  if(lab)lab.textContent='📍 Ubicación';
+  bn.textContent=`📍 ${L}: ${n} artículo${n===1?'':'s'}`;bn.hidden=false;
+}
+function locPick(){const q=norm($('#loc').value);
+  const all=[...new Set(items.filter(i=>!i.del).flatMap(i=>paths(i.location)))].sort((a,b)=>a.localeCompare(b,'es'));
+  lp.innerHTML=all.filter(x=>q?norm(x).includes(q):x.split(SEP).length<=1).slice(0,200).map(x=>`<button type="button" class="sugb" data-l="${h(x)}">${h(x)}</button>`).join('');
+}
+
+$('#loc').addEventListener('change',()=>{locCount();render()});
+</script></body></html>
